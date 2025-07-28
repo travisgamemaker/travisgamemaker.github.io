@@ -144,7 +144,7 @@
 
     destroyScene() {
       if (!this.initialized) {
-         alert("There's no scenes to destroy. you'll have to make one with");
+         alert("There are no scenes to destroy. You'll have to create one.");
          return;
       }
 
