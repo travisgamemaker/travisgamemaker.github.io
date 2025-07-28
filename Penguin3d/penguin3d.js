@@ -92,10 +92,42 @@
             opcode: 'renderScene',
             blockType: Scratch.BlockType.COMMAND,
             text: 'render 3D scene',
+          },
+          {
+            opcode: 'setCameraPosition',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set camera position x: [X] y: [Y] z: [Z]',
+            arguments: {
+              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 5 },
+            }
+          },
+          {
+            opcode: 'setCameraRotation',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set camera rotation x: [X] y: [Y] z: [Z] (degrees)',
+            arguments: {
+              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              }
           }
         ]
       };
     }
+
+    setCameraPosition(args) {
+      if (!this.camera) return;
+      this.camera.position.set(args.X, args.Y, args.Z);
+    }
+
+    setCameraRotation(args) {
+      if (!this.camera) return;
+      const toRadians = deg => (deg * Math.PI) / 180;
+      this.camera.rotation.set(toRadians(args.X), toRadians(args.Y), toRadians(args.Z));
+    }
+
 
     async setupScene() {
       if (this.initialized) {
