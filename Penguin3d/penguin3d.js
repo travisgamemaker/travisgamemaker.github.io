@@ -114,6 +114,19 @@
               }
           },
           {
+            opcode: 'setCameraFOV',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'set camera FOV to [FOV] degrees',
+            arguments: {
+              FOV: { type: Scratch.ArgumentType.NUMBER, defaultValue: 75 },
+            }
+          },
+          {
+            opcode: 'getCameraFOV',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'camera FOV',
+          },
+          {
             opcode: 'destroyScene',
             blockType: Scratch.BlockType.COMMAND,
             text: 'destroy 3D scene',
@@ -175,7 +188,23 @@
         this.initialized = false;
     }
 
+    setCameraFOV(args) {
+      if (!this.camera) return;
 
+      const fov = Number(args.FOV);
+      if (isNaN(fov) || fov <= 0 || fov >= 180) {
+        alert("WOAH, BUSTER! FOV must be a number between 1 and 179.");
+        return;
+      }
+
+      this.camera.fov = fov;
+      this.camera.updateProjectionMatrix();
+    }
+
+    getCameraFOV() {
+      if (!this.camera) return 0;
+      return this.camera.fov;
+    }
 
     addCube(args) {
       if (!this.initialized) return;
