@@ -1,12 +1,14 @@
 (function(Scratch) {
   'use strict';
 
-  // Dynamically load Three.js from CDN
   const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js';
 
-  // Helper to load external JS
   function loadScript(url) {
     return new Promise((resolve, reject) => {
+      if (window.THREE) {
+        resolve(); // Already loaded
+        return;
+      }
       const script = document.createElement('script');
       script.src = url;
       script.onload = resolve;
@@ -24,38 +26,39 @@
       if (this.initialized) return;
 
       await loadScript(THREE_URL);
+
+      // Setup Three.js scene
       this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(75, 640 / 480, 0.1, 1000);
-      this.renderer = new THREE.WebGLRenderer();
-      this.renderer.setSize(640, 480);
+      this.camera = new THREE.PerspectiveCamera(75, 480 / 360, 0.1, 1000); // Match stage aspect ratio
+      this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      this.renderer.setSize(480, 360);
+      this.renderer.setClearColor(0x000000, 0); // Transparent background
 
-      // Attach to document
-      // Try to find the PenguinMod stage container
-      const stage = document.querySelector('#scratch-stage canvas') || document.querySelector('canvas');
-
-      // Resize and position the Three.js canvas to match it
-      if (stage) {
-        const container = stage.parentElement;
-        container.appendChild(this.renderer.domElement);
-        this.renderer.domElement.style.position = 'absolute';
-        this.renderer.domElement.style.top = '0px';
-        this.renderer.domElement.style.left = '0px';
-        this.renderer.domElement.style.width = stage.width + 'px';
-        this.renderer.domElement.style.height = stage.height + 'px';
-        this.renderer.domElement.style.pointerEvents = 'none'; // Allow Scratch interactions
-        this.renderer.domElement.style.zIndex = 10;
-      } else {
-        console.warn('Could not find PenguinMod stage canvas');
-        document.body.appendChild(this.renderer.domElement); // fallback
-      }
-
-
-      // Set up lighting
-      const light = new THREE.PointLight(0xffffff);
+      // Add light
+      const light = new THREE.PointLight(0xffffff, 1);
       light.position.set(10, 10, 10);
       this.scene.add(light);
 
+      // Set camera position
       this.camera.position.z = 5;
+
+      // Append canvas into stage container
+      const stageCanvas = document.querySelector('#scratch-stage canvas') || document.querySelector('canvas');
+      if (stageCanvas) {
+        const container = stageCanvas.parentElement;
+        container.appendChild(this.renderer.domElement);
+        const style = this.renderer.domElement.style;
+        style.position = 'absolute';
+        style.top = '0px';
+        style.left = '0px';
+        style.width = stageCanvas.width + 'px';
+        style.height = stageCanvas.height + 'px';
+        style.pointerEvents = 'none';
+        style.zIndex = '10';
+      } else {
+        console.warn('Could not find stage canvas. Appending to body as fallback.');
+        document.body.appendChild(this.renderer.domElement);
+      }
 
       this.initialized = true;
     }
