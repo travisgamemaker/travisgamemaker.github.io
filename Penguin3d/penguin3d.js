@@ -112,6 +112,11 @@
               Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
               Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
               }
+          },
+          {
+            opcode: 'destroyScene',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'destroy 3D scene',
           }
         ]
       };
@@ -136,6 +141,40 @@
       }
       await this.init3DScene();
     }
+
+    destroyScene() {
+      if (!this.initialized) {
+         alert("No 3D scene exists to destroy.");
+         return;
+      }
+
+      // Remove renderer canvas from DOM
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.remove();
+      }
+
+      // Dispose all objects in the scene to free memory
+      this.scene.traverse(object => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach(m => m.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+      });
+
+        // Dispose renderer
+        this.renderer.dispose();
+
+        // Clear references
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.initialized = false;
+    }
+
 
 
     addCube(args) {
