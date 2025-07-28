@@ -136,7 +136,7 @@
 
     async setupScene() {
       if (this.initialized) {
-        alert("A 3D scene already exists. Reload the project or remove the canvas manually.");
+        alert('A 3D scene already exists, ya dummy. Use the "Destroy 3D scene" block to get rid of it.');
         return;
       }
       await this.init3DScene();
@@ -144,7 +144,7 @@
 
     destroyScene() {
       if (!this.initialized) {
-         alert("No 3D scene exists to destroy.");
+         alert("There's no scenes to destroy. you'll have to make one with");
          return;
       }
 
