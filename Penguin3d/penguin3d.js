@@ -93,6 +93,10 @@
     }
 
     async setupScene() {
+      if (this.initialized) {
+        alert("A 3D scene already exists. Reload the project or remove the canvas manually.");
+        return;
+      }
       await this.init3DScene();
     }
 
