@@ -6,7 +6,7 @@
   function loadScript(url) {
     return new Promise((resolve, reject) => {
       if (window.THREE) {
-        resolve(); // Already loaded
+        resolve();
         return;
       }
       const script = document.createElement('script');
@@ -27,22 +27,27 @@
 
       await loadScript(THREE_URL);
 
-      // Setup Three.js scene
+      const width = 480;
+      const height = 360;
+
       this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(75, 480 / 360, 0.1, 1000); // Match stage aspect ratio
-      this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      this.renderer.setSize(480, 360);
-      this.renderer.setClearColor(0x000000, 0); // Transparent background
+      this.scene.background = new THREE.Color(0xffffff); // white for visibility
 
-      // Add light
-      const light = new THREE.PointLight(0xffffff, 1);
-      light.position.set(10, 10, 10);
-      this.scene.add(light);
-
-      // Set camera position
+      this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000);
       this.camera.position.z = 5;
 
-      // Append canvas into stage container
+      this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      this.renderer.setSize(width, height);
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+
+      // Lighting that actually works
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 5, 5);
+      this.scene.add(ambientLight);
+      this.scene.add(directionalLight);
+
+      // Attach canvas to stage container
       const stageCanvas = document.querySelector('#scratch-stage canvas') || document.querySelector('canvas');
       if (stageCanvas) {
         const container = stageCanvas.parentElement;
@@ -56,7 +61,7 @@
         style.pointerEvents = 'none';
         style.zIndex = '10';
       } else {
-        console.warn('Could not find stage canvas. Appending to body as fallback.');
+        console.warn('Stage not found, appending to body as fallback');
         document.body.appendChild(this.renderer.domElement);
       }
 
@@ -100,10 +105,11 @@
       await this.init3DScene();
     }
 
+
     addCube(args) {
       if (!this.initialized) return;
 
-      const geometry = new THREE.BoxGeometry();
+      const geometry = new THREE.BoxGeometry(1, 1, 1); // standard size cube
       const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
       const cube = new THREE.Mesh(geometry, material);
       cube.position.set(args.X, args.Y, args.Z);
