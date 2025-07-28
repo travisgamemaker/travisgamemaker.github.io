@@ -30,7 +30,25 @@
       this.renderer.setSize(640, 480);
 
       // Attach to document
-      document.body.appendChild(this.renderer.domElement);
+      // Try to find the PenguinMod stage container
+      const stage = document.querySelector('#scratch-stage canvas') || document.querySelector('canvas');
+
+      // Resize and position the Three.js canvas to match it
+      if (stage) {
+        const container = stage.parentElement;
+        container.appendChild(this.renderer.domElement);
+        this.renderer.domElement.style.position = 'absolute';
+        this.renderer.domElement.style.top = '0px';
+        this.renderer.domElement.style.left = '0px';
+        this.renderer.domElement.style.width = stage.width + 'px';
+        this.renderer.domElement.style.height = stage.height + 'px';
+        this.renderer.domElement.style.pointerEvents = 'none'; // Allow Scratch interactions
+        this.renderer.domElement.style.zIndex = 10;
+      } else {
+        console.warn('Could not find PenguinMod stage canvas');
+        document.body.appendChild(this.renderer.domElement); // fallback
+      }
+
 
       // Set up lighting
       const light = new THREE.PointLight(0xffffff);
