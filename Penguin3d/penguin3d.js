@@ -1,3 +1,6 @@
+// I DIDN'T WRITE THIS, NEITHER DID A HUMAN. I WISH I KNEW HOW TO CODE IN JAVASCRIPT SO I COULD'VE.
+// DON'T GIVE CREDIT TO ME AT ALL WHEN USING THIS PLEASE FOR THE LOVE OF GOD
+
 (function(Scratch) {
   'use strict';
 
@@ -20,6 +23,7 @@
   class ThreeJSExtension {
     constructor() {
       this.initialized = false;
+      this.objects = {};
     }
 
     async init3DScene() {
@@ -100,7 +104,7 @@
             arguments: {
               X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
               Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
-              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 5 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
             }
           },
           {
@@ -130,10 +134,145 @@
             opcode: 'destroyScene',
             blockType: Scratch.BlockType.COMMAND,
             text: 'destroy 3D scene',
+          },
+          {
+            opcode: 'sceneExists',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: '3D scene exists?'
+          },
+          {
+            opcode: 'addCubeWithID',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'add cube id [ID] at x: [X] y: [Y] z: [Z]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+            }
+          },
+          {
+            opcode: 'rotateObject',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'rotate object [ID] by x: [X] y: [Y] z: [Z] degrees',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+            }
+          },
+          {
+            opcode: 'loadGLTF',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'load model [URL] as [ID]',
+            arguments: {
+            URL: { type: Scratch.ArgumentType.STRING, defaultValue: 'https://example.com/model.glb' },
+            ID: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+            }
+          },
+          {
+            opcode: 'add3DText',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'add 3D text [TEXT] id [ID] at x: [X] y: [Y] z: [Z]',
+            arguments: {
+              TEXT: { type: Scratch.ArgumentType.STRING, defaultValue: 'SPAGHETTI' },
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+            }
           }
         ]
       };
     }
+
+      async add3DText(args) {
+        if (!this.initialized) return;
+
+        // Load font if needed
+        if (!THREE.FontLoader) {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/FontLoader.js';
+          document.head.appendChild(script);
+          await new Promise(resolve => script.onload = resolve);
+        }
+
+        if (!THREE.TextGeometry) {
+          const script2 = document.createElement('script');
+          script2.src = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/geometries/TextGeometry.js';
+          document.head.appendChild(script2);
+          await new Promise(resolve => script2.onload = resolve);
+        }
+
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', font => {
+          const geometry = new THREE.TextGeometry(args.TEXT, {
+            font: font,
+            size: 1,
+            height: 0.2,
+          });
+          const material = new THREE.MeshStandardMaterial({ color: 0xff5500 });
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.position.set(args.X, args.Y, args.Z);
+          this.scene.add(mesh);
+          this.objects[args.ID] = mesh;
+        });
+      }
+
+
+    async loadGLTF(args) {
+      if (!this.initialized) return;
+
+      // Load GLTFLoader if needed
+      if (!THREE.GLTFLoader) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js';
+        document.head.appendChild(script);
+        await new Promise(resolve => script.onload = resolve);
+      }
+
+      const loader = new THREE.GLTFLoader();
+      loader.load(args.URL, gltf => {
+        const model = gltf.scene;
+        this.scene.add(model);
+        this.objects[args.ID] = model;
+      }, undefined, err => {
+        alert("DUDE THIS MODEL'S ASS *dies*")
+        alert('Failed to load model: ' + err.message);
+      });
+    }
+
+
+    rotateObject(args) {
+      const obj = this.objects[args.ID];
+      if (!obj) return;
+
+      const toRadians = deg => (deg * Math.PI) / 180;
+      obj.rotation.x += toRadians(args.X);
+      obj.rotation.y += toRadians(args.Y);
+      obj.rotation.z += toRadians(args.Z);
+    }
+
+
+    addCubeWithID(args) {
+      if (!this.initialized) return;
+
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      cube.position.set(args.X, args.Y, args.Z);
+
+      this.scene.add(cube);
+      this.objects[args.ID] = cube;
+    }
+
+    
+
+    sceneExists() {
+      return this.initialized;
+    }
+
 
     setCameraPosition(args) {
       if (!this.camera) return;
@@ -145,7 +284,6 @@
       const toRadians = deg => (deg * Math.PI) / 180;
       this.camera.rotation.set(toRadians(args.X), toRadians(args.Y), toRadians(args.Z));
     }
-
 
     async setupScene() {
       if (this.initialized) {
