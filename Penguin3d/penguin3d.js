@@ -51,55 +51,56 @@
     getInfo() {
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
         
-        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Render Controls") },
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Rendering & Scene") },
         
-        { opcode: 'renderSceneWithDelta',  blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments:{ DELTA: { type:Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
-        { opcode: 'sceneExists',           blockType: Scratch.BlockType.BOOLEAN, text: 'scene exists?' },
-        { opcode: 'isRenderingScene',      blockType: Scratch.BlockType.BOOLEAN, text: 'scene is rendering?' },
-        { opcode: 'setCameraClipping',     blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR:  { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
-        { opcode: 'setRendererPixelRatio', blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR] (0 = auto)', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments:{ DELTA: { type:Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
+        { opcode: 'sceneExists',                blockType: Scratch.BlockType.BOOLEAN, text: 'scene exists?' },
+        { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'scene is rendering?' },
+        { opcode: 'setCameraClipping',          blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
+        { opcode: 'setRendererPixelRatio',      blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR] (0 = auto)', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
         { opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer fixed resolution width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
+        { opcode: 'createSceneAntiAliased',     blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene with anti-aliasing' },
+        { opcode: 'createScene',                blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
+        { opcode: 'destroyScene',               blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
+        { opcode: 'setBackgroundColor',         blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type:Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
+        { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments:{VISIBLE:{type:Scratch.ArgumentType.BOOLEAN}}},
 
-        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera & Scene") },
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
 
-        { opcode: 'createScene',           blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
-        { opcode: 'destroyScene',          blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
-        { opcode: 'setBackgroundColor',    blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type:Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
-        { opcode: 'toggleBackground',      blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments:{VISIBLE:{type:Scratch.ArgumentType.BOOLEAN}}},
-        { opcode: 'getCameraCoordinate',   blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments:{AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
-        { opcode: 'setCameraFOV',          blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments:{FOV:{type:Scratch.ArgumentType.NUMBER,defaultValue:75}}},
-        { opcode: 'getCameraFOV',          blockType: Scratch.BlockType.REPORTER, text: 'camera FOV' },
+        { opcode: 'getCameraCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments:{AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
+        { opcode: 'setCameraFOV',               blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments:{FOV:{type:Scratch.ArgumentType.NUMBER,defaultValue:75}}},
+        { opcode: 'getCameraFOV',               blockType: Scratch.BlockType.REPORTER, text: 'camera FOV' },
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Objects & Materials") },
 
-        { opcode: 'loadGLTFModel',         blockType: Scratch.BlockType.COMMAND, text: 'load glTF model [URL] as [ID]', arguments:{URL:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'replaceModel',          blockType: Scratch.BlockType.COMMAND, text: 'replace object [ID] with model from [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'objectExists',          blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] exists?', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'getObjectCoordinate',   blockType: Scratch.BlockType.REPORTER, text: 'object [ID] [AXIS] position', arguments:{ID:{type:Scratch.ArgumentType.STRING},AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
-        { opcode: 'setMaterialColor',      blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] material color to [COLOR]', arguments:{ID:{type:Scratch.ArgumentType.STRING},COLOR:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'setMaterialTexture',    blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] texture to [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'setMaterialType',       blockType: Scratch.BlockType.COMMAND, text: 'set material type of [ID] to [TYPE]', arguments:{ID:{type:Scratch.ArgumentType.STRING},TYPE:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'injectShader',          blockType: Scratch.BlockType.COMMAND, text: 'apply custom shader to [ID] (frag:[FRAG] vert:[VERT])', arguments:{ID:{type:Scratch.ArgumentType.STRING},FRAG:{type:Scratch.ArgumentType.STRING},VERT:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'loadGLTFModel',              blockType: Scratch.BlockType.COMMAND, text: 'create object from glTF model [URL] as [ID]', arguments:{URL:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'replaceModel',               blockType: Scratch.BlockType.COMMAND, text: 'replace object [ID] model with glTF model [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'objectExists',               blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] exists?', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'getObjectCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'object [ID] [AXIS] position', arguments:{ID:{type:Scratch.ArgumentType.STRING},AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
+        { opcode: 'setMaterialColor',           blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] material color to [COLOR]', arguments:{ID:{type:Scratch.ArgumentType.STRING},COLOR:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'setMaterialTexture',         blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] texture to [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'setMaterialType',            blockType: Scratch.BlockType.COMMAND, text: 'set material type of [ID] to [TYPE]', arguments:{ID:{type:Scratch.ArgumentType.STRING},TYPE:{type:Scratch.ArgumentType.STRING,menu:'materialMenu'}}},
+        { opcode: 'injectShader',               blockType: Scratch.BlockType.COMMAND, text: 'apply custom shader to [ID] (frag:[FRAG] vert:[VERT])', arguments:{ID:{type:Scratch.ArgumentType.STRING},FRAG:{type:Scratch.ArgumentType.STRING},VERT:{type:Scratch.ArgumentType.STRING}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Skybox") },
 
-        { opcode: 'loadSkybox',            blockType: Scratch.BlockType.COMMAND, text: 'set skybox using cubemap URL [URL]', arguments:{URL:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'loadSkybox',                 blockType: Scratch.BlockType.COMMAND, text: 'set skybox using cubemap URL [URL]', arguments:{URL:{type:Scratch.ArgumentType.STRING}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Lights") },
 
-        { opcode: 'addLight',              blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x:[X] y:[Y] z:[Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
+        { opcode: 'addLight',                   blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x:[X] y:[Y] z:[Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Physics") },
 
-        { opcode: 'initializePhysics',     blockType: Scratch.BlockType.COMMAND, text: 'initialize physics' },
-        { opcode: 'addPhysicsTo',          blockType: Scratch.BlockType.COMMAND, text: 'add physics to [ID] mass [MASS]', arguments:{ID:{type:Scratch.ArgumentType.STRING},MASS:{type:Scratch.ArgumentType.NUMBER}}},
+        { opcode: 'initializePhysics',          blockType: Scratch.BlockType.COMMAND, text: 'initialize physics' },
+        { opcode: 'addPhysicsTo',               blockType: Scratch.BlockType.COMMAND, text: 'add physics to [ID] mass [MASS]', arguments:{ID:{type:Scratch.ArgumentType.STRING},MASS:{type:Scratch.ArgumentType.NUMBER}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Animations") },
 
-        { opcode: 'playAnimationLooped',   blockType: Scratch.BlockType.COMMAND, text: 'play animation [NAME] on [ID] loop: [LOOP]', arguments:{NAME:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},LOOP:{type:Scratch.ArgumentType.BOOLEAN}}},
-        { opcode: 'stopAllAnimations',     blockType: Scratch.BlockType.COMMAND, text: 'stop all animations on [ID]', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'fadeAnimation',         blockType: Scratch.BlockType.COMMAND, text: 'fade from [FROM] to [TO] on [ID] over [SECONDS] sec', arguments:{FROM:{type:Scratch.ArgumentType.STRING},TO:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},SECONDS:{type:Scratch.ArgumentType.NUMBER}}},
-        { opcode: 'setAnimationSpeed',     blockType: Scratch.BlockType.COMMAND, text: 'set animation speed of [ID] to [SPEED]', arguments:{ID:{type:Scratch.ArgumentType.STRING},SPEED:{type:Scratch.ArgumentType.NUMBER}}}
+        { opcode: 'playAnimationLooped',        blockType: Scratch.BlockType.COMMAND, text: 'play animation [NAME] on [ID] loop: [LOOP]', arguments:{NAME:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},LOOP:{type:Scratch.ArgumentType.BOOLEAN}}},
+        { opcode: 'stopAllAnimations',          blockType: Scratch.BlockType.COMMAND, text: 'stop all animations on [ID]', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'fadeAnimation',              blockType: Scratch.BlockType.COMMAND, text: 'fade from [FROM] to [TO] on [ID] over [SECONDS] sec', arguments:{FROM:{type:Scratch.ArgumentType.STRING},TO:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},SECONDS:{type:Scratch.ArgumentType.NUMBER}}},
+        { opcode: 'setAnimationSpeed',          blockType: Scratch.BlockType.COMMAND, text: 'set animation speed of [ID] to [SPEED]', arguments:{ID:{type:Scratch.ArgumentType.STRING},SPEED:{type:Scratch.ArgumentType.NUMBER}}}
       ],
       menus: {
         axisMenu: {
@@ -117,14 +118,26 @@
             { text: 'point', value: 'point' },
             { text: 'directional', value: 'directional' },
           ] 
+        },
+        materialMenu: {
+          acceptReporters: true, 
+          items:[
+            { text: 'basic', value: 'basic' },
+            { text: 'phong', value: 'phong' },
+            { text: 'standard', value: 'standard' },
+        },
+        onOffMenu: {
+          acceptReporters: true, 
+          items: [
+            'on', 'off'
+          ] 
         }
-      }
-    };
-  }
+      };
+    }
 
   /* --------- Block Implementations --------- */
 
-  async createScene() {
+  async createSceneAntiAliased() {
     if (this.initialized) { alert('3D scene already exists!'); return; }
     await loadScript(THREE_CDN);
     this.clock = new THREE.Clock();
@@ -136,6 +149,20 @@
     stage.appendChild(this.renderer.domElement);
     this.initialized = true;
   }
+
+    async createScene() {
+    if (this.initialized) { alert('3D scene already exists!'); return; }
+    await loadScript(THREE_CDN);
+    this.clock = new THREE.Clock();
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
+    this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:false });
+    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
+    const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
+    stage.appendChild(this.renderer.domElement);
+    this.initialized = true;
+  }
+
 
   destroyScene() {
     if (!this.initialized) { alert('No 3D scene to destroy.'); return; }
@@ -345,6 +372,7 @@
     if (!obj || !obj.mixer) return;
     obj.mixer.timeScale = args.SPEED;
   }
+    
 }
 
   Scratch.extensions.register(new ThreeDExtension());
