@@ -138,8 +138,9 @@
           acceptReporters: true, 
           items: ['on', 'off'] 
         }
-      };
-    }
+      }
+    };
+  }
 
   /* --------- Block Implementations --------- */
 
