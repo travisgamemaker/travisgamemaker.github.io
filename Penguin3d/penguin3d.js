@@ -132,12 +132,11 @@
             { text: 'basic', value: 'basic' },
             { text: 'phong', value: 'phong' },
             { text: 'standard', value: 'standard' },
+          ]
         },
         onOffMenu: {
           acceptReporters: true, 
-          items: [
-            'on', 'off'
-          ] 
+          items: ['on', 'off'] 
         }
       };
     }
