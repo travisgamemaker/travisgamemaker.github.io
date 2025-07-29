@@ -1,5 +1,5 @@
 // I DIDN'T WRITE THIS, NEITHER DID A HUMAN. I WISH I KNEW HOW TO CODE IN JAVASCRIPT SO I COULD'VE.
-// DON'T GIVE CREDIT TO ME AT ALL WHEN USING THIS PLEASE FOR THE LOVE OF GOD
+// DON'T GIVE CREDIT TO ME AT ALL WHEN USING THIS PLEASE FOR THE LOVE OF GOD.
 
 // PenguinMod 3D Extension using Three.js
 // Full-featured toolkit: scene, camera, objects, materials, shaders, skybox, physics, post-processing
@@ -7,11 +7,13 @@
 (function(Scratch) {
   'use strict';
 
-  const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js';
-  const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/GLTFLoader.js';
-  const CUBE_TEXTURE_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/CubeTextureLoader.js';
+  //3D Engine
+  const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js';
+  const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/loaders/GLTFLoader.js';
+  const POSTPROCESSING_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/postprocessing/EffectComposer.js';
+
+  //physics
   const CANNON_CDN = 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
-  const POSTPROCESSING_CDN = 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/postprocessing/EffectComposer.js';
 
   function loadScript(url, module=false) {
     return new Promise((resolve, reject) => {
@@ -248,7 +250,7 @@
   }
 
   addPhysicsTo(args) {
-    if(!this.enablePhysics||!this.physicsWorld) return;
+    if(!this.enablePhysics||!this.physicsWorld) { alert("Physics aren't initialized!"); return; }
     const obj=this.objects[args.ID]; if(!obj) return;
     const shape=new CANNON.Box(new CANNON.Vec3(1,1,1));
     const body=new CANNON.Body({mass:args.MASS,shape});
