@@ -50,14 +50,16 @@
         { opcode: 'sceneExists',           blockType: Scratch.BlockType.BOOLEAN, text: 'scene exists?' },
         { opcode: 'isRenderingScene',      blockType: Scratch.BlockType.BOOLEAN, text: 'scene is rendering?' },
 
-        // Camera & Scene
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera & Scene") },
+
         { opcode: 'setBackgroundColor',    blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type:Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
         { opcode: 'toggleBackground',      blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments:{VISIBLE:{type:Scratch.ArgumentType.BOOLEAN}}},
         { opcode: 'getCameraCoordinate',   blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments:{AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
         { opcode: 'setCameraFOV',          blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments:{FOV:{type:Scratch.ArgumentType.NUMBER,defaultValue:75}}},
         { opcode: 'getCameraFOV',          blockType: Scratch.BlockType.REPORTER, text: 'camera FOV' },
 
-        // Objects & Materials
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Objects & Materials") },
+
         { opcode: 'loadGLTFModel',         blockType: Scratch.BlockType.COMMAND, text: 'load glTF model [URL] as [ID]', arguments:{URL:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'replaceModel',          blockType: Scratch.BlockType.COMMAND, text: 'replace object [ID] with model from [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'objectExists',          blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] exists?', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
@@ -67,20 +69,21 @@
         { opcode: 'setMaterialType',       blockType: Scratch.BlockType.COMMAND, text: 'set material type of [ID] to [TYPE]', arguments:{ID:{type:Scratch.ArgumentType.STRING},TYPE:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'injectShader',          blockType: Scratch.BlockType.COMMAND, text: 'apply custom shader to [ID] (frag:[FRAG] vert:[VERT])', arguments:{ID:{type:Scratch.ArgumentType.STRING},FRAG:{type:Scratch.ArgumentType.STRING},VERT:{type:Scratch.ArgumentType.STRING}}},
 
-        // Skybox
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Skybox") },
+
         { opcode: 'loadSkybox',            blockType: Scratch.BlockType.COMMAND, text: 'set skybox using cubemap URL [URL]', arguments:{URL:{type:Scratch.ArgumentType.STRING}}},
 
-        // Lights
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Lights") },
+
         { opcode: 'addLight',              blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x:[X] y:[Y] z:[Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
 
-        // Physics
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Physics") },
+
         { opcode: 'initializePhysics',     blockType: Scratch.BlockType.COMMAND, text: 'initialize physics' },
         { opcode: 'addPhysicsTo',          blockType: Scratch.BlockType.COMMAND, text: 'add physics to [ID] mass [MASS]', arguments:{ID:{type:Scratch.ArgumentType.STRING},MASS:{type:Scratch.ArgumentType.NUMBER}}},
 
-        // Post-processing
-        { opcode: 'addPostProcessing',     blockType: Scratch.BlockType.COMMAND, text: 'add post-processing effect [TYPE]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING}}},
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Animations") },
 
-        // Animation
         { opcode: 'playAnimationLooped',   blockType: Scratch.BlockType.COMMAND, text: 'play animation [NAME] on [ID] loop: [LOOP]', arguments:{NAME:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},LOOP:{type:Scratch.ArgumentType.BOOLEAN}}},
         { opcode: 'stopAllAnimations',     blockType: Scratch.BlockType.COMMAND, text: 'stop all animations on [ID]', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'fadeAnimation',         blockType: Scratch.BlockType.COMMAND, text: 'fade from [FROM] to [TO] on [ID] over [SECONDS] sec', arguments:{FROM:{type:Scratch.ArgumentType.STRING},TO:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},SECONDS:{type:Scratch.ArgumentType.NUMBER}}},
