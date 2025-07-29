@@ -83,19 +83,12 @@
             text: 'create 3D scene',
           },
           {
-            opcode: 'addCube',
+            opcode: 'renderSceneWithDelta',
             blockType: Scratch.BlockType.COMMAND,
-            text: 'add cube at x: [X] y: [Y] z: [Z]',
+            text: 'render scene with delta [DELTA]',
             arguments: {
-              X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
-              Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
-              Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
+              DELTA: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }
             }
-          },
-          {
-            opcode: 'renderScene',
-            blockType: Scratch.BlockType.COMMAND,
-            text: 'render 3D scene',
           },
           {
             opcode: 'setCameraPosition',
@@ -182,10 +175,70 @@
               Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
               Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 },
             }
+          },
+          {
+            opcode: 'objectExists',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'object with ID [ID] exists?',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: 'cube1' }
+            }
+          },
+          {
+            opcode: 'isRendering',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'rendering frame?'
+          },
+          {
+            opcode: 'playAnimation',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'play animation [NAME] on [ID]',
+            arguments: {
+              NAME: { type: Scratch.ArgumentType.STRING, defaultValue: '' },
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '' }
+            }
+          }
+          {
+            opcode: 'getAnimationNames',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'animation names on [ID]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: 'model1' }
+            }
           }
         ]
       };
     }
+
+      playAnimation(args) {
+        const obj = this.objects[args.ID];
+        if (!obj || !obj.animations || !obj.mixer) return;
+
+        const clip = THREE.AnimationClip.findByName(obj.animations, args.NAME);
+        if (!clip) {
+          alert(`Animation "${args.NAME}" not found on object "${args.ID}".`);
+          return;
+        }
+
+        const action = obj.mixer.clipAction(clip);
+        action.reset().play();
+      }
+
+    getAnimationNames(args) {
+      const obj = this.objects[args.ID];
+      if (!obj || !obj.animations) return '';
+      return obj.animations.map(a => a.name).join(', ');
+    }
+
+
+      
+      isRendering() {
+        return this._isRendering || false;
+      }
+
+      objectExists(args) {
+        return !!this.objects[args.ID];
+      }
 
       async add3DText(args) {
         if (!this.initialized) return;
@@ -243,7 +296,6 @@
       });
     }
 
-
     rotateObject(args) {
       const obj = this.objects[args.ID];
       if (!obj) return;
@@ -253,7 +305,6 @@
       obj.rotation.y += toRadians(args.Y);
       obj.rotation.z += toRadians(args.Z);
     }
-
 
     addCubeWithID(args) {
       if (!this.initialized) return;
@@ -267,12 +318,9 @@
       this.objects[args.ID] = cube;
     }
 
-    
-
     sceneExists() {
       return this.initialized;
     }
-
 
     setCameraPosition(args) {
       if (!this.camera) return;
@@ -344,20 +392,20 @@
       return this.camera.fov;
     }
 
-    addCube(args) {
-      if (!this.initialized) return;
+    renderSceneWithDelta(args) {
+      if (!this.renderer || !this.scene || !this.camera) return;
 
-      const geometry = new THREE.BoxGeometry(1, 1, 1); // standard size cube
-      const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material);
-      cube.position.set(args.X, args.Y, args.Z);
-      this.scene.add(cube);
-    }
+      const delta = parseFloat(args.DELTA);
 
-    renderScene() {
-      if (!this.initialized) return;
+      if (this.mixers) {
+        this.mixers.forEach(mixer => mixer.update(delta));
+      }
+
       this.renderer.render(this.scene, this.camera);
     }
+
+
+  
   }
 
   Scratch.extensions.register(new ThreeJSExtension());
