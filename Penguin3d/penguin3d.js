@@ -7,6 +7,10 @@
 (function(Scratch) {
   'use strict';
 
+  if (!Scratch.extensions.unsandboxed) {
+        throw new Error('you gotta run it unsandboxed.');
+  }
+
   //3D Engine
   const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js';
   const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/loaders/GLTFLoader.js';
@@ -46,14 +50,20 @@
 
     getInfo() {
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
-        { opcode: 'createScene',           blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
-        { opcode: 'destroyScene',          blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
-        { opcode: 'renderSceneWithDelta',  blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments:{DELTA:{type:Scratch.ArgumentType.NUMBER,defaultValue:0.016}}},
+        
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Render Controls") },
+        
+        { opcode: 'renderSceneWithDelta',  blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments:{ DELTA: { type:Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
         { opcode: 'sceneExists',           blockType: Scratch.BlockType.BOOLEAN, text: 'scene exists?' },
         { opcode: 'isRenderingScene',      blockType: Scratch.BlockType.BOOLEAN, text: 'scene is rendering?' },
+        { opcode: 'setCameraClipping',     blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR:  { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
+        { opcode: 'setRendererPixelRatio', blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR] (0 = auto)', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer fixed resolution width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera & Scene") },
 
+        { opcode: 'createScene',           blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
+        { opcode: 'destroyScene',          blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
         { opcode: 'setBackgroundColor',    blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type:Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
         { opcode: 'toggleBackground',      blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments:{VISIBLE:{type:Scratch.ArgumentType.BOOLEAN}}},
         { opcode: 'getCameraCoordinate',   blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments:{AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
@@ -92,8 +102,22 @@
         { opcode: 'setAnimationSpeed',     blockType: Scratch.BlockType.COMMAND, text: 'set animation speed of [ID] to [SPEED]', arguments:{ID:{type:Scratch.ArgumentType.STRING},SPEED:{type:Scratch.ArgumentType.NUMBER}}}
       ],
       menus: {
-        axisMenu: { acceptReporters: false, items: ['x','y','z'] },
-        lightMenu:{ acceptReporters:false, items:['ambient','point','directional'] }
+        axisMenu: {
+          acceptReporters: true, 
+          items: [
+            { text: 'x', value: 'x' },
+            { text: 'y', value: 'y' },
+            { text: 'z', value: 'z' }
+          ] 
+        },
+        lightMenu: {
+          acceptReporters: true, 
+          items:[
+            { text: 'ambient', value: 'ambient' },
+            { text: 'point', value: 'point' },
+            { text: 'directional', value: 'directional' },
+          ] 
+        }
       }
     };
   }
@@ -105,9 +129,9 @@
     await loadScript(THREE_CDN);
     this.clock = new THREE.Clock();
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75,480/360,0.1,1000);
+    this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
-    this.renderer.setSize(480,360);
+    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
     const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
     stage.appendChild(this.renderer.domElement);
     this.initialized = true;
@@ -122,7 +146,31 @@
   }
 
   sceneExists() { return this.initialized; }
+  
   isRenderingScene() { return this.isRendering; }
+
+  setRendererPixelRatio(args) {
+  if (!this.renderer) { alert('Initialize a scene first.'); return; }
+  const dpr = Number(args.DPR);
+  const target = (dpr && dpr > 0) ? dpr : Math.max(1, window.devicePixelRatio || 1);
+  this.renderer.setPixelRatio(target);
+}
+
+  setRendererFixedResolution(args) {
+    if (!this.initialized) { alert('Initialize a scene first.'); return; }
+    const w = Math.max(1, Math.floor(Number(args.W)));
+    const h = Math.max(1, Math.floor(Number(args.H)));
+    this.renderer.setSize(w, h, false);
+  }
+
+  setCameraClipping(args) {
+    if (!this.camera) { alert('Initialize a scene first.'); return; }
+    const near = Math.max(0.0001, Number(args.NEAR));
+    const far  = Math.max(near + 0.0001, Number(args.FAR));
+    this.camera.near = near;
+    this.camera.far  = far;
+    this.camera.updateProjectionMatrix();
+  }
 
   renderSceneWithDelta(args) {
     if (!this.initialized) return;
@@ -161,7 +209,8 @@
 
   setCameraFOV(args) {
     if (!this.camera) return;
-    this.camera.fov = args.FOV; this.camera.updateProjectionMatrix();
+    this.camera.fov = args.FOV; 
+    this.camera.updateProjectionMatrix();
   }
 
   getCameraFOV() { return this.camera? this.camera.fov:0; }
