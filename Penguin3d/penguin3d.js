@@ -52,24 +52,30 @@
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
         
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Rendering & Scene") },
-        
-        { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments:{ DELTA: { type:Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
+
+        { opcode: 'createScene',                blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
+        { opcode: 'createSceneAntiAliased',     blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene with anti-aliasing' },
+        { opcode: 'destroyScene',               blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
         { opcode: 'sceneExists',                blockType: Scratch.BlockType.BOOLEAN, text: 'scene exists?' },
-        { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'scene is rendering?' },
-        { opcode: 'setCameraClipping',          blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
+        { opcode: 'setBackgroundColor',         blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type: Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
+        { opcode: 'setLinearFog',               blockType: Scratch.BlockType.COMMAND, text: 'set linear fog color [COLOR] near [NEAR] far [FAR]', arguments: {COLOR: { type: Scratch.ArgumentType.STRING, defaultValue: '#88aaff' }, NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 5 }, FAR: {type: Scratch.ArgumentType.NUMBER, defaultValue: 50 }}},
+        { opcode: 'setExpFog',                  blockType: Scratch.BlockType.COMMAND, text: 'set exponential fog color [COLOR] density [DENSITY]', arguments: {COLOR:   { type: Scratch.ArgumentType.STRING, defaultValue: '#88aaff' }, DENSITY: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.02 }}},
+        { opcode: 'clearFog',                   blockType: Scratch.BlockType.COMMAND, text: 'clear fog'}
+
+        "---",
+        
+        { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments: { DELTA: { type :Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
+        { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'rendering?' },
         { opcode: 'setRendererPixelRatio',      blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR] (0 = auto)', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
         { opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer fixed resolution width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
-        { opcode: 'createSceneAntiAliased',     blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene with anti-aliasing' },
-        { opcode: 'createScene',                blockType: Scratch.BlockType.COMMAND, text: 'create 3D scene' },
-        { opcode: 'destroyScene',               blockType: Scratch.BlockType.COMMAND, text: 'destroy 3D scene' },
-        { opcode: 'setBackgroundColor',         blockType: Scratch.BlockType.COMMAND, text: 'set background color to [COLOR]', arguments:{COLOR:{type:Scratch.ArgumentType.STRING,defaultValue:'#000000'}}},
-        { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments:{VISIBLE:{type:Scratch.ArgumentType.BOOLEAN}}},
+        { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments: { VISIBLE: { type: Scratch.ArgumentType.BOOLEAN}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
 
-        { opcode: 'getCameraCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments:{AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
-        { opcode: 'setCameraFOV',               blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments:{FOV:{type:Scratch.ArgumentType.NUMBER,defaultValue:75}}},
+        { opcode: 'getCameraCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu'}}},
+        { opcode: 'setCameraFOV',               blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments: { FOV: { type: Scratch.ArgumentType.NUMBER, defaultValue: 75}}},
         { opcode: 'getCameraFOV',               blockType: Scratch.BlockType.REPORTER, text: 'camera FOV' },
+        { opcode: 'setCameraClipping',          blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Objects & Materials") },
 
@@ -101,6 +107,7 @@
         { opcode: 'stopAllAnimations',          blockType: Scratch.BlockType.COMMAND, text: 'stop all animations on [ID]', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'fadeAnimation',              blockType: Scratch.BlockType.COMMAND, text: 'fade from [FROM] to [TO] on [ID] over [SECONDS] sec', arguments:{FROM:{type:Scratch.ArgumentType.STRING},TO:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},SECONDS:{type:Scratch.ArgumentType.NUMBER}}},
         { opcode: 'setAnimationSpeed',          blockType: Scratch.BlockType.COMMAND, text: 'set animation speed of [ID] to [SPEED]', arguments:{ID:{type:Scratch.ArgumentType.STRING},SPEED:{type:Scratch.ArgumentType.NUMBER}}}
+        
       ],
       menus: {
         axisMenu: {
@@ -137,18 +144,42 @@
 
   /* --------- Block Implementations --------- */
 
-  async createSceneAntiAliased() {
-    if (this.initialized) { alert('3D scene already exists!'); return; }
-    await loadScript(THREE_CDN);
-    this.clock = new THREE.Clock();
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
-    this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
-    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
-    const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
-    stage.appendChild(this.renderer.domElement);
-    this.initialized = true;
-  }
+    async createSceneAntiAliased() {
+      if (this.initialized) { alert('3D scene already exists!'); return; }
+      await loadScript(THREE_CDN);
+      this.clock = new THREE.Clock();
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
+      this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+      this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
+      const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
+      stage.appendChild(this.renderer.domElement);
+      this.initialized = true;
+    }
+
+    setLinearFog(args) {
+      if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
+      const color = new THREE.Color(args.COLOR);
+      const near = Math.max(0.0001, Number(args.NEAR));
+      const far  = Math.max(near + 0.0001, Number(args.FAR));
+      this.scene.fog = new THREE.Fog(color, near, far);
+      // Optional: also tint clear color to match
+      // this.renderer.setClearColor(color, 1);
+    }
+
+    setExpFog(args) {
+      if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
+      const color = new THREE.Color(args.COLOR);
+      const density = Math.max(0, Number(args.DENSITY));
+      this.scene.fog = new THREE.FogExp2(color, density);
+      // Optional: this.renderer.setClearColor(color, 1);
+    }
+
+    clearFog() {
+      if (!this.scene) { alert('Create a scene first.'); return; }
+      this.scene.fog = null;
+    }
+
 
     async createScene() {
     if (this.initialized) { alert('3D scene already exists!'); return; }
@@ -163,7 +194,6 @@
     this.initialized = true;
   }
 
-
   destroyScene() {
     if (!this.initialized) { alert('No 3D scene to destroy.'); return; }
     this.renderer.domElement.remove();
@@ -172,26 +202,30 @@
     this.initialized=false;
   }
 
-  sceneExists() { return this.initialized; }
+  sceneExists() { 
+    return this.initialized; 
+  }
   
-  isRenderingScene() { return this.isRendering; }
+  isRenderingScene() { 
+    return this.isRendering; 
+  }
 
   setRendererPixelRatio(args) {
-  if (!this.renderer) { alert('Initialize a scene first.'); return; }
+  if (!this.renderer) { alert('Create a scene first.'); return; }
   const dpr = Number(args.DPR);
   const target = (dpr && dpr > 0) ? dpr : Math.max(1, window.devicePixelRatio || 1);
   this.renderer.setPixelRatio(target);
-}
+  }
 
   setRendererFixedResolution(args) {
-    if (!this.initialized) { alert('Initialize a scene first.'); return; }
+    if (!this.initialized) { alert('Create a scene first.'); return; }
     const w = Math.max(1, Math.floor(Number(args.W)));
     const h = Math.max(1, Math.floor(Number(args.H)));
     this.renderer.setSize(w, h, false);
   }
 
   setCameraClipping(args) {
-    if (!this.camera) { alert('Initialize a scene first.'); return; }
+    if (!this.camera) { alert('Create a scene first.'); return; }
     const near = Math.max(0.0001, Number(args.NEAR));
     const far  = Math.max(near + 0.0001, Number(args.FAR));
     this.camera.near = near;
@@ -200,7 +234,7 @@
   }
 
   renderSceneWithDelta(args) {
-    if (!this.initialized) return;
+    if (!this.initialized) { alert('Create a scene first.'); return; }
     const delta = parseFloat(args.DELTA);
     this.isRendering=true;
     // update animations
@@ -214,28 +248,28 @@
   }
 
   getRenderedDataURL() {
-    if (!this.initialized) return '';
+    if (!this.initialized) { alert('Render a frame first.'); return ''; }
     this.renderer.render(this.scene,this.camera);
     return this.renderer.domElement.toDataURL('image/png');
   }
 
   setBackgroundColor(args) {
-    if (!this.scene) return;
+    if (!this.scene) { alert('Create a scene first.'); return; }
     this.renderer.setClearColor(new THREE.Color(args.COLOR));
   }
 
   toggleBackground(args) {
-    if (!this.renderer) return;
+    if (!this.renderer) { alert('Create a scene first.'); return; }
     this.renderer.domElement.style.display = args.VISIBLE ? 'block' : 'none';
   }
 
   getCameraCoordinate(args) {
-    if (!this.camera) return 0;
+    if (!this.camera) { alert('Create a scene first.'); return 0; }
     return this.camera.position[args.AXIS];
   }
 
   setCameraFOV(args) {
-    if (!this.camera) return;
+    if (!this.camera) { alert('Create a scene first.'); return; }
     this.camera.fov = args.FOV; 
     this.camera.updateProjectionMatrix();
   }
