@@ -12,25 +12,56 @@
   }
 
   //3D Engine
-  const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js';
-  const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/loaders/GLTFLoader.js';
-  const POSTPROCESSING_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/postprocessing/EffectComposer.js';
+  //const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js';
+  //const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/loaders/GLTFLoader.js';
+  //const POSTPROCESSING_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/postprocessing/EffectComposer.js';
 
   //physics
-  const CANNON_CDN = 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+  //const CANNON_CDN = 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
 
-  function loadScript(url, module=false) {
-    return new Promise((resolve, reject) => {
-      if (module) {
-        import(url).then(resolve).catch(reject);
-      } else if (window.THREE && url === THREE_CDN) {
-        resolve();
-      } else {
-        const s = document.createElement('script'); s.src = url; s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      }
-    });
+  //function loadScript(url, module=false) {
+  //  return new Promise((resolve, reject) => {
+  //    if (module) {
+  //      import(url).then(resolve).catch(reject);
+  //    } else if (window.THREE && url === THREE_CDN) {
+  //      resolve();
+  //    } else {
+  //      const s = document.createElement('script'); s.src = url; s.onload = resolve; s.onerror = reject;
+  //      document.head.appendChild(s);
+  //    }
+  //  });
+  //}
+
+  // Modern ESM loader (no global THREE)
+  async _ensureThree(version = 'latest') {
+  if (this.THREE) return; // already loaded
+  const base = `https://cdn.jsdelivr.net/npm/three@${version}`;
+  // Load core
+  this.THREE = await import(`${base}/build/three.module.js`);
+  // Store module URLs for loaders you need
+  this._threeUrls = {
+    GLTFLoader: `${base}/examples/jsm/loaders/GLTFLoader.js`,
+    CubeTextureLoader: `${base}/examples/jsm/loaders/CubeTextureLoader.js`,
+    // add more here if needed (e.g., OrbitControls, FontLoader, TextGeometry)
+    };
   }
+
+  // Convenience: get a GLTFLoader instance
+  async _getGLTFLoader() {
+    await this._ensureThree(); // ensures this.THREE is ready
+    const { GLTFLoader } = await import(this._threeUrls.GLTFLoader);
+    return new GLTFLoader();
+  }
+
+  // (Optional) CubeTextureLoader via jsm (rarely needed directly; see skybox note)
+  async _getCubeTextureLoader() {
+    await this._ensureThree();
+    // Most people still use THREE.CubeTextureLoader global; with modules you can do:
+    // In jsm, a cubemap is typically loaded with THREE.CubeTextureLoader from core,
+    // which is available as a class on this.THREE namespace:
+    return new this.THREE.CubeTextureLoader();
+  }
+
 
   class ThreeDExtension {
     constructor() {
@@ -181,13 +212,13 @@
     }
 
 
-    async createScene() {
+  async createScene() {
     if (this.initialized) { alert('3D scene already exists!'); return; }
-    await loadScript(THREE_CDN);
-    this.clock = new THREE.Clock();
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
-    this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:false });
+    await this._ensureThree('latest');
+    this.clock = new this.THREE.Clock();
+    this.scene = new this.THREE.Scene();
+    this.camera = new this.THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
+    this.renderer = new this.THREE.WebGLRenderer({ alpha:true, antialias:false });
     this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
     const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
     stage.appendChild(this.renderer.domElement);
