@@ -78,6 +78,16 @@
       return new this.THREE.CubeTextureLoader();
     }
 
+    const onResize = () => {
+      this.camera.aspect = Scratch.vm.runtime.stageWidth / Scratch.vm.runtime.stageHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight, false);
+    };
+    // Simple approach: listen for window resizes
+    window.addEventListener('resize', onResize);
+    // (If you have access to VM events, also react to a stage-size-changed event.)
+
+
     getInfo() {
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
         
@@ -96,8 +106,8 @@
         
         { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments: { DELTA: { type :Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
         { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'rendering?' },
-        { opcode: 'setRendererPixelRatio',      blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR] (0 = auto)', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
-        { opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer fixed resolution width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
+        //{ opcode: 'setRendererPixelRatio',      blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR]', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }}},
+        //{ opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer resolution to width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
         { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments: { VISIBLE: { type: Scratch.ArgumentType.BOOLEAN}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
@@ -174,11 +184,29 @@
     await this._ensureThree('latest');
     this.clock = new this.THREE.Clock();
     this.scene = new this.THREE.Scene();
-    this.camera = new this.THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
-    this.renderer = new this.THREE.WebGLRenderer({ alpha:true, antialias:true });
-    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
-    const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
-    stage.appendChild(this.renderer.domElement);
+    this.camera = new this.THREE.PerspectiveCamera(
+      75,
+      Scratch.vm.runtime.stageWidth / Scratch.vm.runtime.stageHeight,
+      0.1, 1000
+    );
+    this.renderer = new this.THREE.WebGLRenderer({ alpha: true, antialias: true });
+  
+    const baseCanvas = Scratch?.vm?.runtime?.renderer?.canvas;
+    if (!baseCanvas || !baseCanvas.parentElement) {
+      alert('Could not find the stage canvas. Are you running unsandboxed and after the project has loaded?');
+      return;
+    }
+    const container = baseCanvas.parentElement;
+    container.style.position = container.style.position || 'relative';
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.left = '0';
+    this.renderer.domElement.style.top = '0';
+    this.renderer.domElement.style.pointerEvents = 'none';
+
+    this.renderer.setPixelRatio(Math.max(1, window.devicePixelRatio || 1));
+    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight, false);
+    container.appendChild(this.renderer.domElement);
+
     this.initialized = true;
   }
 
@@ -211,11 +239,29 @@
     await this._ensureThree('latest');
     this.clock = new this.THREE.Clock();
     this.scene = new this.THREE.Scene();
-    this.camera = new this.THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
-    this.renderer = new this.THREE.WebGLRenderer({ alpha:true, antialias:false });
-    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
-    const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
-    stage.appendChild(this.renderer.domElement);
+    this.camera = new this.THREE.PerspectiveCamera(
+      75,
+      Scratch.vm.runtime.stageWidth / Scratch.vm.runtime.stageHeight,
+      0.1, 1000
+    );
+    this.renderer = new this.THREE.WebGLRenderer({ alpha: true, antialias: false });
+  
+    const baseCanvas = Scratch?.vm?.runtime?.renderer?.canvas;
+    if (!baseCanvas || !baseCanvas.parentElement) {
+      alert('Could not find the stage canvas. Are you running unsandboxed and after the project has loaded?');
+      return;
+    }
+    const container = baseCanvas.parentElement;
+    container.style.position = container.style.position || 'relative';
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.left = '0';
+    this.renderer.domElement.style.top = '0';
+    this.renderer.domElement.style.pointerEvents = 'none';
+
+    this.renderer.setPixelRatio(Math.max(1, window.devicePixelRatio || 1));
+    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight, false);
+    container.appendChild(this.renderer.domElement);
+
     this.initialized = true;
   }
 
