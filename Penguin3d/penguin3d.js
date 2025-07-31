@@ -11,27 +11,6 @@
         throw new Error('you gotta run it unsandboxed.');
   }
 
-  //3D Engine
-  //const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js';
-  //const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/loaders/GLTFLoader.js';
-  //const POSTPROCESSING_CDN = 'https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/postprocessing/EffectComposer.js';
-
-  //physics
-  //const CANNON_CDN = 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
-
-  //function loadScript(url, module=false) {
-  //  return new Promise((resolve, reject) => {
-  //    if (module) {
-  //      import(url).then(resolve).catch(reject);
-  //    } else if (window.THREE && url === THREE_CDN) {
-  //      resolve();
-  //    } else {
-  //      const s = document.createElement('script'); s.src = url; s.onload = resolve; s.onerror = reject;
-  //      document.head.appendChild(s);
-  //    }
-  //  });
-  //}
-
   class ThreeDExtension {
     constructor() {
       this.initialized = false;
@@ -47,6 +26,8 @@
       this.enablePhysics = false;
       this.composer = null;
       this._resizeHandler = null;
+      this.debugPhysics = false;
+      this.debugMeshes = {};
     }
 
     // Modern ESM loader (no global THREE)
@@ -62,6 +43,18 @@
       // add more here if needed (e.g., OrbitControls, FontLoader, TextGeometry)
       };
     }
+
+    async _ensureRapier() {
+      if (this.rapier) return;
+
+      const rapierModule = await import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.1/rapier3d.js');
+      await rapierModule.init();
+      this.rapier = rapierModule;
+      this.physicsWorld = new this.rapier.World({ x: 0, y: -9.81, z: 0 });
+      this.physicsBodies = {}; // Map from ID to { body, collider }
+      this.colliderSet = this.physicsWorld?.colliders;
+    }
+
 
     // Convenience: get a GLTFLoader instance
     async _getGLTFLoader() {
@@ -109,8 +102,6 @@
         
         { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments: { DELTA: { type :Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
         { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'rendering?' },
-        //{ opcode: 'setRendererPixelRatio',      blockType: Scratch.BlockType.COMMAND, text: 'set renderer pixel ratio to [DPR]', arguments: { DPR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }}},
-        //{ opcode: 'setRendererFixedResolution', blockType: Scratch.BlockType.COMMAND, text: 'set renderer resolution to width [W] height [H]', arguments: { W: { type: Scratch.ArgumentType.NUMBER, defaultValue: 480 }, H: { type: Scratch.ArgumentType.NUMBER, defaultValue: 360 }}},
         { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments: { VISIBLE: { type: Scratch.ArgumentType.BOOLEAN}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
@@ -130,6 +121,15 @@
         { opcode: 'setMaterialTexture',         blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] texture to [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'setMaterialType',            blockType: Scratch.BlockType.COMMAND, text: 'set material type of [ID] to [TYPE]', arguments:{ID:{type:Scratch.ArgumentType.STRING},TYPE:{type:Scratch.ArgumentType.STRING,menu:'materialMenu'}}},
         { opcode: 'injectShader',               blockType: Scratch.BlockType.COMMAND, text: 'apply custom shader to [ID] (frag:[FRAG] vert:[VERT])', arguments:{ID:{type:Scratch.ArgumentType.STRING},FRAG:{type:Scratch.ArgumentType.STRING},VERT:{type:Scratch.ArgumentType.STRING}}},
+
+        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Physics") },
+
+        { opcode: 'addPhysicsToObject', blockType: Scratch.BlockType.COMMAND, text: 'add physics to object [ID]', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
+        { opcode: 'removePhysicsFromObject', blockType: Scratch.BlockType.COMMAND, text: 'remove physics from object [ID]', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
+        { opcode: 'setObjectVelocity', blockType: Scratch.BlockType.COMMAND, text: 'set velocity of object [ID] x: [VX] y: [VY] z: [VZ]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, VX: { type: Scratch.ArgumentType.NUMBER }, VY: { type: Scratch.ArgumentType.NUMBER }, VZ: { type: Scratch.ArgumentType.NUMBER }}},
+        { opcode: 'objectIsTouchingAnything', blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] is touching anything?', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
+        { opcode: 'objectIsTouchingObject', blockType: Scratch.BlockType.BOOLEAN, text: 'object [A] is touching [B]?', arguments: { A: { type: Scratch.ArgumentType.STRING }, B: { type: Scratch.ArgumentType.STRING }}},
+        { opcode: 'toggleDebugPhysics', blockType: Scratch.BlockType.COMMAND, text: 'debug physics: [DEBUG]', arguments: { DEBUG: { type: Scratch.ArgumentType.BOOLEAN }}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Skybox") },
 
@@ -290,20 +290,6 @@
     return this.isRendering; 
   }
 
-  setRendererPixelRatio(args) {
-  if (!this.renderer) { alert('Create a scene first.'); return; }
-  const dpr = Number(args.DPR);
-  const target = (dpr && dpr > 0) ? dpr : Math.max(1, window.devicePixelRatio || 1);
-  this.renderer.setPixelRatio(target);
-  }
-
-  setRendererFixedResolution(args) {
-    if (!this.initialized) { alert('Create a scene first.'); return; }
-    const w = Math.max(1, Math.floor(Number(args.W)));
-    const h = Math.max(1, Math.floor(Number(args.H)));
-    this.renderer.setSize(w, h, false);
-  }
-
   setCameraClipping(args) {
     if (!this.camera) { alert('Create a scene first.'); return; }
     const near = Math.max(0.0001, Number(args.NEAR));
@@ -320,7 +306,27 @@
     // update animations
     this.mixers.forEach(m=>m.update(delta));
     // physics step
-    if (this.enablePhysics && this.physicsWorld) this.physicsWorld.step(delta);
+    if (this.physicsWorld) {
+      this.physicsWorld.step();
+      // Update Three.js objects from physics
+      for (const [id, { body }] of Object.entries(this.physicsBodies)) {
+        const obj = this.objects[id];
+        if (!obj) continue;
+        const pos = body.translation();
+        const rot = body.rotation();
+        obj.position.set(pos.x, pos.y, pos.z);
+        obj.quaternion.set(rot.x, rot.y, rot.z, rot.w);
+        
+        if (this.debugPhysics) {
+          let dbg = this.debugMeshes[id];
+          if (!dbg) continue;
+          const halfExtents = this._getHalfExtentsFromObject({ ID: id });
+          dbg.scale.set(halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2);
+          dbg.position.copy(obj.position);
+          dbg.quaternion.copy(obj.quaternion);
+        }
+      }
+    }
     // render
     if (this.composer) this.composer.render();
     else this.renderer.render(this.scene,this.camera);
@@ -524,7 +530,83 @@
     if (!obj || !obj.mixer) return;
     obj.mixer.timeScale = args.SPEED;
   }
-    
+
+  async addPhysicsToObject(args) {
+    await this._ensureRapier();
+    const obj = this.objects[args.ID];
+    if (!obj || this.physicsBodies[args.ID]) return;
+
+    const box = new this.THREE.Box3().setFromObject(obj);
+    const size = new this.THREE.Vector3();
+    box.getSize(size);
+    const scale = new this.THREE.Vector3().copy(size).multiplyScalar(0.5);
+
+    const rbDesc = this.rapier.RigidBodyDesc.dynamic().setTranslation(obj.position.x, obj.position.y, obj.position.z);
+    const body = this.physicsWorld.createRigidBody(rbDesc);
+
+    const colliderDesc = this.rapier.ColliderDesc.cuboid(scale.x, scale.y, scale.z);
+    const collider = this.physicsWorld.createCollider(colliderDesc, body);
+
+    this.physicsBodies[args.ID] = { body, collider };
+
+    // Create debug mesh immediately if debug is enabled
+    if (this.debugPhysics) {
+      const geo = new this.THREE.BoxGeometry(scale.x * 2, scale.y * 2, scale.z * 2);
+      const mat = new this.THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+      const dbgMesh = new this.THREE.Mesh(geo, mat);
+      dbgMesh.position.copy(obj.position);
+      this.scene.add(dbgMesh);
+      this.debugMeshes[args.ID] = dbgMesh;
+    }
+  }
+
+  removePhysicsFromObject(args) {
+    const data = this.physicsBodies[args.ID];
+    if (!data) return;
+    this.physicsWorld.removeRigidBody(data.body);
+    delete this.physicsBodies[args.ID];
+    if (this.debugMeshes[args.ID]) {
+      this.scene.remove(this.debugMeshes[args.ID]);
+      delete this.debugMeshes[args.ID];
+    }
+  }
+
+  setObjectVelocity(args) {
+    const data = this.physicsBodies[args.ID];
+    if (!data) return;
+    data.body.setLinvel({ x: Number(args.VX), y: Number(args.VY), z: Number(args.VZ) }, true);
+  }
+
+  objectIsTouchingAnything(args) {
+    const data = this.physicsBodies[args.ID];
+    if (!data) return false;
+    const collider = data.collider;
+    const pairs = this.physicsWorld.narrowPhase.contactPairsWith(collider.handle);
+    return pairs.length > 0;
+  }
+
+  objectIsTouchingObject(args) {
+    const a = this.physicsBodies[args.A];
+    const b = this.physicsBodies[args.B];
+    if (!a || !b) return false;
+    const pairs = this.physicsWorld.narrowPhase.contactPairsWith(a.collider.handle);
+    return pairs.some(pair => pair.collider2 === b.collider.handle);
+  }
+
+  toggleDebugPhysics(args) {
+    this.debugPhysics = !!args.DEBUG;
+
+    // Remove old debug meshes if turning off
+    if (!this.debugPhysics) {
+      for (const mesh of Object.values(this.debugMeshes)) {
+        this.scene.remove(mesh);
+      }
+      this.debugMeshes = {};
+    }
+  }
+
+
+
 }
 
   Scratch.extensions.register(new ThreeDExtension());
