@@ -130,11 +130,11 @@
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Skybox") },
 
-        { opcode: 'loadSkybox',                 blockType: Scratch.BlockType.COMMAND, text: 'set skybox using cubemap URL [URL]', arguments:{URL:{type:Scratch.ArgumentType.STRING}}},
+        { opcode: 'loadSkybox',                 blockType: Scratch.BlockType.COMMAND, text: 'set skybox using cubemap URLs: +X [URL1] −X [URL2] +Y [URL3] −Y [URL4] +Z [URL5] −Z [URL6]', arguments:{URL1:{type:Scratch.ArgumentType.STRING},URL2:{type:Scratch.ArgumentType.STRING},URL3:{type:Scratch.ArgumentType.STRING},URL4:{type:Scratch.ArgumentType.STRING},URL5:{type:Scratch.ArgumentType.STRING},URL6:{type:Scratch.ArgumentType.STRING}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Lights") },
 
-        { opcode: 'addLight',                   blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x:[X] y:[Y] z:[Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
+        { opcode: 'addLight',                   blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x: [X] y: [Y] z: [Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Animations") },
 
@@ -417,11 +417,48 @@
   }
 
   loadSkybox(args) {
-    const urls=args.URL.split(',');
-    new this.THREE.CubeTextureLoader().setPath('').load(urls,(tex)=>{
-      this.scene.background=tex; this.skybox=tex;
-    });
+    if (!this.scene) {
+      alert('Create a scene first.');
+      return;
+    }
+
+    // Preferred path: 6 labeled URLs in +X, -X, +Y, -Y, +Z, -Z order.
+    const six = [args.URL1, args.URL2, args.URL3, args.URL4, args.URL5, args.URL6]
+      .map(u => (u ?? '').trim())
+      .filter(Boolean);
+
+    // Backward-compatible: allow prior single comma-separated "URL"
+    // e.g., "px.png,nx.png,py.png,ny.png,pz.png,nz.png"
+    let faces = six.length === 6 ? six : null;
+    if (!faces) {
+      const legacy = (args.URL ?? '').split(',').map(s => s.trim()).filter(Boolean);
+        if (legacy.length === 6) {
+        faces = legacy;
+      }
+    }
+
+    if (!faces || faces.length !== 6) {
+      alert('Provide six URLs (url1..url6) in +X, -X, +Y, -Y, +Z, -Z order.');
+      return;
+    }
+
+    const loader = new this.THREE.CubeTextureLoader();
+    if (loader.setCrossOrigin) loader.setCrossOrigin('anonymous'); // safe if supported
+    loader.setPath(''); // keep path neutral; you’re passing full URLs
+
+    loader.load(
+      faces,
+      (tex) => {
+        this.scene.background = tex;
+        this.skybox = tex;
+      },
+      undefined,
+      (err) => {
+        alert('Failed to load skybox: ' + (err?.message || err));
+      }
+    );
   }
+
 
   addLight(args) {
     let light;
