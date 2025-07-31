@@ -270,6 +270,12 @@
 
   destroyScene() {
     if (!this.initialized) { alert('No 3D scene to destroy.'); return; }
+
+    if (this._resizeHandler) {
+      window.removeEventListener('resize', this._resizeHandler);
+      this._resizeHandler = null;
+    }
+    
     this.renderer.domElement.remove();
     this.scene = this.camera = this.renderer = null;
     this.objects = {}; this.mixers=[]; this.skybox=null;
