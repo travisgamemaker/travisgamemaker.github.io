@@ -301,7 +301,7 @@
 
   getCameraFOV() { return this.camera? this.camera.fov:0; }
 
-  async loadGLTFmodel(args) {
+  async loadGLTFModel(args) {
     if (!this.scene) return;
 
       const loader = await this._getGLTFLoader();
