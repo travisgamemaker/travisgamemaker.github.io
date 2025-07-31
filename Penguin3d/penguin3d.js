@@ -34,14 +34,14 @@
 
   // Modern ESM loader (no global THREE)
   async _ensureThree(version = 'latest') {
-  if (this.THREE) return; // already loaded
-  const base = `https://cdn.jsdelivr.net/npm/three@${version}`;
-  // Load core
-  this.THREE = await import(`${base}/build/three.module.js`);
-  // Store module URLs for loaders you need
-  this._threeUrls = {
-    GLTFLoader: `${base}/examples/jsm/loaders/GLTFLoader.js`,
-    CubeTextureLoader: `${base}/examples/jsm/loaders/CubeTextureLoader.js`,
+    if (this.THREE) return; // already loaded
+    const base = `https://cdn.jsdelivr.net/npm/three@${version}`;
+    // Load core
+    this.THREE = await import(`${base}/build/three.module.js`);
+    // Store module URLs for loaders you need
+    this._threeUrls = {
+      GLTFLoader: `${base}/examples/jsm/loaders/GLTFLoader.js`,
+      CubeTextureLoader: `${base}/examples/jsm/loaders/CubeTextureLoader.js`,
     // add more here if needed (e.g., OrbitControls, FontLoader, TextGeometry)
     };
   }
@@ -61,7 +61,6 @@
     // which is available as a class on this.THREE namespace:
     return new this.THREE.CubeTextureLoader();
   }
-
 
   class ThreeDExtension {
     constructor() {
@@ -127,11 +126,6 @@
 
         { opcode: 'addLight',                   blockType: Scratch.BlockType.COMMAND, text: 'add [TYPE] light at x:[X] y:[Y] z:[Z]', arguments:{TYPE:{type:Scratch.ArgumentType.STRING,menu:'lightMenu'},X:{type:Scratch.ArgumentType.NUMBER},Y:{type:Scratch.ArgumentType.NUMBER},Z:{type:Scratch.ArgumentType.NUMBER}}},
 
-        { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Physics") },
-
-        { opcode: 'initializePhysics',          blockType: Scratch.BlockType.COMMAND, text: 'initialize physics' },
-        { opcode: 'addPhysicsTo',               blockType: Scratch.BlockType.COMMAND, text: 'add physics to [ID] mass [MASS]', arguments:{ID:{type:Scratch.ArgumentType.STRING},MASS:{type:Scratch.ArgumentType.NUMBER}}},
-
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Animations") },
 
         { opcode: 'playAnimationLooped',        blockType: Scratch.BlockType.COMMAND, text: 'play animation [NAME] on [ID] loop: [LOOP]', arguments:{NAME:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING},LOOP:{type:Scratch.ArgumentType.BOOLEAN}}},
@@ -175,41 +169,41 @@
 
   /* --------- Block Implementations --------- */
 
-    async createSceneAntiAliased() {
-      if (this.initialized) { alert('3D scene already exists!'); return; }
-      await loadScript(THREE_CDN);
-      this.clock = new THREE.Clock();
-      this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
-      this.renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
-      this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
-      const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
-      stage.appendChild(this.renderer.domElement);
-      this.initialized = true;
-    }
+  async createSceneAntiAliased() {
+    if (this.initialized) { alert('3D scene already exists!'); return; }
+    await this._ensureThree('latest');
+    this.clock = new this.THREE.Clock();
+    this.scene = new this.THREE.Scene();
+    this.camera = new this.THREE.PerspectiveCamera(75, Scratch.vm.runtime.stageWidth/Scratch.vm.runtime.stageHeight, 0.1, 1000);
+    this.renderer = new this.THREE.WebGLRenderer({ alpha:true, antialias:true });
+    this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight);
+    const stage = document.querySelector('#scratch-stage .stage-canvas') || document.querySelector('#scratch-stage');
+    stage.appendChild(this.renderer.domElement);
+    this.initialized = true;
+  }
 
-    setLinearFog(args) {
-      if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
-      const color = new THREE.Color(args.COLOR);
-      const near = Math.max(0.0001, Number(args.NEAR));
-      const far  = Math.max(near + 0.0001, Number(args.FAR));
-      this.scene.fog = new THREE.Fog(color, near, far);
-      // Optional: also tint clear color to match
-      // this.renderer.setClearColor(color, 1);
-    }
+  setLinearFog(args) {
+    if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
+    const color = new this.THREE.Color(args.COLOR);
+    const near = Math.max(0.0001, Number(args.NEAR));
+    const far  = Math.max(near + 0.0001, Number(args.FAR));
+    this.scene.fog = new this.THREE.Fog(color, near, far);
+    // Optional: also tint clear color to match
+    // this.renderer.setClearColor(color, 1);
+  }
 
-    setExpFog(args) {
-      if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
-      const color = new THREE.Color(args.COLOR);
-      const density = Math.max(0, Number(args.DENSITY));
-      this.scene.fog = new THREE.FogExp2(color, density);
-      // Optional: this.renderer.setClearColor(color, 1);
-    }
+  setExpFog(args) {
+    if (!this.scene || !this.renderer) { alert('Create a scene first.'); return; }
+    const color = new this.THREE.Color(args.COLOR);
+    const density = Math.max(0, Number(args.DENSITY));
+    this.scene.fog = new this.THREE.FogExp2(color, density);
+    // Optional: this.renderer.setClearColor(color, 1);
+  }
 
-    clearFog() {
-      if (!this.scene) { alert('Create a scene first.'); return; }
-      this.scene.fog = null;
-    }
+  clearFog() {
+    if (!this.scene) { alert('Create a scene first.'); return; }
+    this.scene.fog = null;
+  }
 
 
   async createScene() {
@@ -286,7 +280,7 @@
 
   setBackgroundColor(args) {
     if (!this.scene) { alert('Create a scene first.'); return; }
-    this.renderer.setClearColor(new THREE.Color(args.COLOR));
+    this.renderer.setClearColor(new this.THREE.Color(args.COLOR));
   }
 
   toggleBackground(args) {
@@ -307,18 +301,29 @@
 
   getCameraFOV() { return this.camera? this.camera.fov:0; }
 
-  async loadGLTFModel(args) {
-    await loadScript(GLTF_LOADER_CDN, true);
-    const loader = new THREE.GLTFLoader();
-    loader.load(args.URL, gltf=>{
-      const model=gltf.scene; this.scene.add(model);
-      this.objects[args.ID]=model;
-      if (gltf.animations.length){
-        const mixer=new THREE.AnimationMixer(model);
-        model.mixer=mixer; model.animations=gltf.animations;
-        this.mixers.push(mixer);
+  async loadGLTFmodel(args) {
+    if (!this.scene) return;
+
+      const loader = await this._getGLTFLoader();
+      loader.load(
+        args.URL,
+        (gltf) => {
+        const model = gltf.scene;
+        this.scene.add(model);
+        this.objects[args.ID] = model;
+
+        if (gltf.animations && gltf.animations.length) {
+          const mixer = new this.THREE.AnimationMixer(model);
+          model.mixer = mixer;
+          model.animations = gltf.animations;
+          this.mixers.push(mixer);
+        }
+      },
+      undefined,
+      (err) => {
+        alert('Failed to load GLTF: ' + (err?.message || err));
       }
-    });
+    );
   }
 
   replaceModel(args) {
@@ -336,12 +341,12 @@
 
   setMaterialColor(args) {
     const obj=this.objects[args.ID]; if(!obj?.material) return;
-    obj.material.color=new THREE.Color(args.COLOR);
+    obj.material.color=new this.THREE.Color(args.COLOR);
   }
 
   async setMaterialTexture(args) {
     const obj=this.objects[args.ID]; if(!obj?.material) return;
-    const tex=new THREE.TextureLoader().load(args.URL);
+    const tex=new this.THREE.TextureLoader().load(args.URL);
     obj.material.map=tex; obj.material.needsUpdate=true;
   }
 
@@ -349,9 +354,9 @@
     const obj=this.objects[args.ID]; if(!obj) return;
     let mat;
     switch(args.TYPE.toLowerCase()){
-      case 'basic': mat=new THREE.MeshBasicMaterial({color:obj.material.color}); break;
-      case 'phong': mat=new THREE.MeshPhongMaterial({color:obj.material.color}); break;
-      case 'standard': mat=new THREE.MeshStandardMaterial({color:obj.material.color}); break;
+      case 'basic': mat=new this.THREE.MeshBasicMaterial({color:obj.material.color}); break;
+      case 'phong': mat=new this.THREE.MeshPhongMaterial({color:obj.material.color}); break;
+      case 'standard': mat=new this.THREE.MeshStandardMaterial({color:obj.material.color}); break;
       default: return;
     }
     obj.material.dispose(); obj.material=mat;
@@ -359,7 +364,7 @@
 
   injectShader(args) {
     const obj=this.objects[args.ID]; if(!obj) return;
-    obj.material=new THREE.ShaderMaterial({
+    obj.material=new this.THREE.ShaderMaterial({
       vertexShader: args.VERT,
       fragmentShader: args.FRAG
     });
@@ -367,7 +372,7 @@
 
   loadSkybox(args) {
     const urls=args.URL.split(',');
-    new THREE.CubeTextureLoader().setPath('').load(urls,(tex)=>{
+    new this.THREE.CubeTextureLoader().setPath('').load(urls,(tex)=>{
       this.scene.background=tex; this.skybox=tex;
     });
   }
@@ -375,34 +380,24 @@
   addLight(args) {
     let light;
     switch(args.TYPE){
-      case 'ambient': light=new THREE.AmbientLight(0xffffff); break;
-      case 'point': light=new THREE.PointLight(0xffffff); break;
-      case 'directional': light=new THREE.DirectionalLight(0xffffff); break;
+      case 'ambient': light=new this.THREE.AmbientLight(0xffffff); break;
+      case 'point': light=new this.THREE.PointLight(0xffffff); break;
+      case 'directional': light=new this.THREE.DirectionalLight(0xffffff); break;
     }
     light.position.set(args.X,args.Y,args.Z);
     this.scene.add(light);
   }
 
-  async initializePhysics() {
-    await loadScript(CANNON_CDN);
-    this.physicsWorld=new CANNON.World();
-    this.physicsWorld.gravity.set(0,-9.82,0);
-    this.enablePhysics=true;
-  }
-
-  addPhysicsTo(args) {
-    if(!this.enablePhysics||!this.physicsWorld) { alert("Physics aren't initialized!"); return; }
-    const obj=this.objects[args.ID]; if(!obj) return;
-    const shape=new CANNON.Box(new CANNON.Vec3(1,1,1));
-    const body=new CANNON.Body({mass:args.MASS,shape});
-    this.physicsWorld.addBody(body);
-    obj.userData.physicsBody=body;
-  }
-
-  async addPostProcessing(args) {
-    await loadScript(POSTPROCESSING_CDN, true);
-    this.composer=new THREE.EffectComposer(this.renderer);
-    // user can specify effect type: blur, bloom etc—stub for future
+  _getHalfExtentsFromObject(args) {
+    const box = new this.THREE.Box3().setFromObject(obj);
+    const size = new this.THREE.Vector3();
+    box.getSize(size);
+    // Avoid zero sizes
+    return {
+      x: Math.max(0.001, size.x / 2),
+      y: Math.max(0.001, size.y / 2),
+      z: Math.max(0.001, size.z / 2)
+    };
   }
 
   playAnimationLooped(args) {
@@ -412,7 +407,7 @@
     if (!clip) return;
     const action = obj.mixer.clipAction(clip);
     action.reset().play();
-    action.setLoop(args.LOOP ? THREE.LoopRepeat : THREE.LoopOnce);
+    action.setLoop(args.LOOP ? this.THREE.LoopRepeat : this.THREE.LoopOnce);
   }
 
   stopAllAnimations(args) {
