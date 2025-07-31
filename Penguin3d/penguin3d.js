@@ -101,7 +101,23 @@
 
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
 
+        { opcode: 'changeCameraAxis', blockType: Scratch.BlockType.COMMAND, text: 'change camera\'s [AXIS] position by [VALUE]', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 10 }}},
+        { opcode: 'changeCameraPosition', blockType: Scratch.BlockType.COMMAND, text: 'change camera\'s position by x: [X] y: [Y] z: [Z]', arguments: { X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'setCameraAxis', blockType: Scratch.BlockType.COMMAND, text: 'set camera\'s [AXIS] position to [VALUE]', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'setCameraPosition', blockType: Scratch.BlockType.COMMAND, text: 'set camera\'s position to x: [X] y: [Y] z: [Z]', arguments: { X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+
+        "---",
+
+        { opcode: 'rotateCameraAxis', blockType: Scratch.BlockType.COMMAND, text: 'rotate camera around [AXIS] by [DEGREES] degrees', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, DEGREES: { type: Scratch.ArgumentType.NUMBER, defaultValue: 15 }}},
+        { opcode: 'setCameraRotation', blockType: Scratch.BlockType.COMMAND, text: 'set camera rotation to x: [X] y: [Y] z: [Z]', arguments: { X: { type: Scratch.ArgumentType.NUMBER }, Y: { type: Scratch.ArgumentType.NUMBER }, Z: { type: Scratch.ArgumentType.NUMBER }}},
+
+        "---",
+        
         { opcode: 'getCameraCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] position', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu'}}},
+        { opcode: 'getCameraRotation',        blockType: Scratch.BlockType.REPORTER, text: 'camera [AXIS] rotation', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu'}}},
+
+        "---",
+
         { opcode: 'setCameraFOV',               blockType: Scratch.BlockType.COMMAND, text: 'set camera FOV to [FOV] degrees', arguments: { FOV: { type: Scratch.ArgumentType.NUMBER, defaultValue: 75}}},
         { opcode: 'getCameraFOV',               blockType: Scratch.BlockType.REPORTER, text: 'camera FOV' },
         { opcode: 'setCameraClipping',          blockType: Scratch.BlockType.COMMAND, text: 'set camera clipping near [NEAR] far [FAR]', arguments: { NEAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0.1 }, FAR: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1000 }}},
@@ -110,8 +126,30 @@
 
         { opcode: 'loadGLTFModel',              blockType: Scratch.BlockType.COMMAND, text: 'create object from glTF model [URL] as [ID]', arguments:{URL:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'replaceModel',               blockType: Scratch.BlockType.COMMAND, text: 'replace object [ID] model with glTF model [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
-        { opcode: 'objectExists',               blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] exists?', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
+        
+        "---",
+
+        { opcode: 'changeObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'change object [ID] [AXIS] position by [VALUE]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 10 }}},
+        { opcode: 'changeObjectPosition', blockType: Scratch.BlockType.COMMAND, text: 'change object [ID] position by x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'setObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] [AXIS] position to [VALUE]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+        { opcode: 'setObjectPosition', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] position to x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
+       
+        "---",
+
+        { opcode: 'rotateObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'rotate object [ID] around [AXIS] by [DEGREES] degrees', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, DEGREES: { type: Scratch.ArgumentType.NUMBER, defaultValue: 15 }}},
+        { opcode: 'setObjectRotation', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] rotation to x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER }, Y: { type: Scratch.ArgumentType.NUMBER }, Z: { type: Scratch.ArgumentType.NUMBER }}},
+
+        "---",
+        
         { opcode: 'getObjectCoordinate',        blockType: Scratch.BlockType.REPORTER, text: 'object [ID] [AXIS] position', arguments:{ID:{type:Scratch.ArgumentType.STRING},AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
+        { opcode: 'getObjectRotation',        blockType: Scratch.BlockType.REPORTER, text: 'object [ID] [AXIS] rotation', arguments:{ID:{type:Scratch.ArgumentType.STRING},AXIS:{type:Scratch.ArgumentType.STRING,menu:'axisMenu'}}},
+
+        "---",
+
+        { opcode: 'objectExists',               blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] exists?', arguments:{ID:{type:Scratch.ArgumentType.STRING}}},
+
+        "---",
+
         { opcode: 'setMaterialColor',           blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] material color to [COLOR]', arguments:{ID:{type:Scratch.ArgumentType.STRING},COLOR:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'setMaterialTexture',         blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] texture to [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'setMaterialType',            blockType: Scratch.BlockType.COMMAND, text: 'set material type of [ID] to [TYPE]', arguments:{ID:{type:Scratch.ArgumentType.STRING},TYPE:{type:Scratch.ArgumentType.STRING,menu:'materialMenu'}}},
@@ -176,6 +214,111 @@
   }
 
   /* --------- Block Implementations --------- */
+
+  rotateCameraAxis(args) {
+    if (!this.camera) return;
+    const radians = this.THREE.MathUtils.degToRad(Number(args.DEGREES));
+    this.camera.rotation[args.AXIS] += radians;
+  }
+
+  setCameraRotation(args) {
+    if (!this.camera) return;
+    this.camera.rotation.set(
+      this.THREE.MathUtils.degToRad(Number(args.X)),
+      this.THREE.MathUtils.degToRad(Number(args.Y)),
+      this.THREE.MathUtils.degToRad(Number(args.Z))
+    );
+  }
+
+  rotateObjectAxis(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    const radians = this.THREE.MathUtils.degToRad(Number(args.DEGREES));
+    obj.rotation[args.AXIS] += radians;
+
+    if (this.physicsBodies[args.ID]) {
+      obj.updateMatrixWorld();
+      obj.getWorldQuaternion(obj.quaternion);
+      this.physicsBodies[args.ID].body.setRotation(obj.quaternion, true);
+    }
+  }
+
+  setObjectRotation(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.rotation.set(
+      this.THREE.MathUtils.degToRad(Number(args.X)),
+      this.THREE.MathUtils.degToRad(Number(args.Y)),
+      this.THREE.MathUtils.degToRad(Number(args.Z))
+    );
+    if (this.physicsBodies[args.ID]) {
+      obj.updateMatrixWorld();
+      obj.getWorldQuaternion(obj.quaternion);
+      this.physicsBodies[args.ID].body.setRotation(obj.quaternion, true);
+    }
+  }
+  
+
+  changeCameraAxis(args) {
+    if (!this.camera) return;
+    this.camera.position[args.AXIS] += Number(args.VALUE);
+  }
+
+  changeCameraPosition(args) {
+    if (!this.camera) return;
+    this.camera.position.x += Number(args.X);
+    this.camera.position.y += Number(args.Y);
+    this.camera.position.z += Number(args.Z);
+  }
+
+  setCameraAxis(args) {
+    if (!this.camera) return;
+    this.camera.position[args.AXIS] = Number(args.VALUE);
+  }
+
+  setCameraPosition(args) {
+    if (!this.camera) return;
+    this.camera.position.set(Number(args.X), Number(args.Y), Number(args.Z));
+  }
+
+  changeObjectAxis(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.position[args.AXIS] += Number(args.VALUE);
+    if (this.physicsBodies[args.ID]) {
+      this.physicsBodies[args.ID].body.setTranslation(obj.position, true);
+    }
+  }
+
+  changeObjectPosition(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.position.x += Number(args.X);
+    obj.position.y += Number(args.Y);
+    obj.position.z += Number(args.Z);
+    if (this.physicsBodies[args.ID]) {
+      this.physicsBodies[args.ID].body.setTranslation(obj.position, true);
+    }
+  }
+
+  setObjectAxis(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.position[args.AXIS] = Number(args.VALUE);
+    if (this.physicsBodies[args.ID]) {
+      this.physicsBodies[args.ID].body.setTranslation(obj.position, true);
+    }
+  }
+
+  setObjectPosition(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.position.set(Number(args.X), Number(args.Y), Number(args.Z));
+    if (this.physicsBodies[args.ID]) {
+      this.physicsBodies[args.ID].body.setTranslation(obj.position, true);
+    }
+  }
+
 
   async createSceneAntiAliased() {
     if (this.initialized) { alert('3D scene already exists!'); return; }
@@ -351,6 +494,11 @@
     return this.camera.position[args.AXIS];
   }
 
+  getCameraRotation(args) {
+    if (!this.camera) { alert('Create a scene first.'); return 0; }
+    return this.camera.rotation[args.AXIS];
+  }
+
   setCameraFOV(args) {
     if (!this.camera) { alert('Create a scene first.'); return; }
     this.camera.fov = args.FOV; 
@@ -395,6 +543,11 @@
   getObjectCoordinate(args) {
     const obj=this.objects[args.ID];
     return obj? obj.position[args.AXIS]:0;
+  }
+
+  getObjectRotation(args) {
+    const obj=this.objects[args.ID];
+    return obj? obj.rotation[args.AXIS]:0;
   }
 
   setMaterialColor(args) {
