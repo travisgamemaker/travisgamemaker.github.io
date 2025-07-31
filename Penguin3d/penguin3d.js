@@ -46,6 +46,7 @@
       this.physicsWorld = null;
       this.enablePhysics = false;
       this.composer = null;
+      this._resizeHandler = null;
     }
 
     // Modern ESM loader (no global THREE)
@@ -78,15 +79,17 @@
       return new this.THREE.CubeTextureLoader();
     }
 
-    const onResize = () => {
-      this.camera.aspect = Scratch.vm.runtime.stageWidth / Scratch.vm.runtime.stageHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(Scratch.vm.runtime.stageWidth, Scratch.vm.runtime.stageHeight, false);
-    };
-    // Simple approach: listen for window resizes
-    window.addEventListener('resize', onResize);
-    // (If you have access to VM events, also react to a stage-size-changed event.)
+    // Keep sizes in sync with the Scratch stage
+  this._resizeHandler = () => {
+    const w = Scratch.vm.runtime.stageWidth;
+    const h = Scratch.vm.runtime.stageHeight;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h, false);
+  };
 
+  // Add listener once the scene is set up
+  window.addEventListener('resize', this._resizeHandler);
 
     getInfo() {
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
