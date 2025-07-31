@@ -25,9 +25,16 @@
       this.physicsWorld = null;
       this.enablePhysics = false;
       this.composer = null;
-      this._resizeHandler = null;
       this.debugPhysics = false;
       this.debugMeshes = {};
+      // Keep sizes in sync with the Scratch stage
+      this._resizeHandler = () => {
+        const w = Scratch.vm.runtime.stageWidth;
+        const h = Scratch.vm.runtime.stageHeight;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h, false);
+      };
     }
 
     // Modern ESM loader (no global THREE)
@@ -71,15 +78,6 @@
       // which is available as a class on this.THREE namespace:
       return new this.THREE.CubeTextureLoader();
     }
-
-    // Keep sizes in sync with the Scratch stage
-  this._resizeHandler = () => {
-    const w = Scratch.vm.runtime.stageWidth;
-    const h = Scratch.vm.runtime.stageHeight;
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, h, false);
-  };
 
   // Add listener once the scene is set up
   window.addEventListener('resize', this._resizeHandler);
