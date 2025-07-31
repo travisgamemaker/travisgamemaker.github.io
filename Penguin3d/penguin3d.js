@@ -79,9 +79,6 @@
       return new this.THREE.CubeTextureLoader();
     }
 
-  // Add listener once the scene is set up
-  window.addEventListener('resize', this._resizeHandler);
-
     getInfo() {
       return { id: 'threejs3d', name: '3D Toolkit', blocks: [
         
@@ -209,6 +206,7 @@
     container.appendChild(this.renderer.domElement);
 
     this.initialized = true;
+    window.addEventListener('resize', this._resizeHandler);
   }
 
   setLinearFog(args) {
@@ -264,6 +262,7 @@
     container.appendChild(this.renderer.domElement);
 
     this.initialized = true;
+    window.addEventListener('resize', this._resizeHandler);
   }
 
   destroyScene() {
