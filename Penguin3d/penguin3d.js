@@ -32,36 +32,6 @@
   //  });
   //}
 
-  // Modern ESM loader (no global THREE)
-  async _ensureThree(version = 'latest') {
-    if (this.THREE) return; // already loaded
-    const base = `https://cdn.jsdelivr.net/npm/three@${version}`;
-    // Load core
-    this.THREE = await import(`${base}/build/three.module.js`);
-    // Store module URLs for loaders you need
-    this._threeUrls = {
-      GLTFLoader: `${base}/examples/jsm/loaders/GLTFLoader.js`,
-      CubeTextureLoader: `${base}/examples/jsm/loaders/CubeTextureLoader.js`,
-    // add more here if needed (e.g., OrbitControls, FontLoader, TextGeometry)
-    };
-  }
-
-  // Convenience: get a GLTFLoader instance
-  async _getGLTFLoader() {
-    await this._ensureThree(); // ensures this.THREE is ready
-    const { GLTFLoader } = await import(this._threeUrls.GLTFLoader);
-    return new GLTFLoader();
-  }
-
-  // (Optional) CubeTextureLoader via jsm (rarely needed directly; see skybox note)
-  async _getCubeTextureLoader() {
-    await this._ensureThree();
-    // Most people still use THREE.CubeTextureLoader global; with modules you can do:
-    // In jsm, a cubemap is typically loaded with THREE.CubeTextureLoader from core,
-    // which is available as a class on this.THREE namespace:
-    return new this.THREE.CubeTextureLoader();
-  }
-
   class ThreeDExtension {
     constructor() {
       this.initialized = false;
@@ -76,6 +46,36 @@
       this.physicsWorld = null;
       this.enablePhysics = false;
       this.composer = null;
+    }
+
+    // Modern ESM loader (no global THREE)
+    async _ensureThree(version = 'latest') {
+      if (this.THREE) return; // already loaded
+      const base = `https://cdn.jsdelivr.net/npm/three@${version}`;
+      // Load core
+      this.THREE = await import(`${base}/build/three.module.js`);
+      // Store module URLs for loaders you need
+      this._threeUrls = {
+        GLTFLoader: `${base}/examples/jsm/loaders/GLTFLoader.js`,
+        CubeTextureLoader: `${base}/examples/jsm/loaders/CubeTextureLoader.js`,
+      // add more here if needed (e.g., OrbitControls, FontLoader, TextGeometry)
+      };
+    }
+
+    // Convenience: get a GLTFLoader instance
+    async _getGLTFLoader() {
+      await this._ensureThree(); // ensures this.THREE is ready
+      const { GLTFLoader } = await import(this._threeUrls.GLTFLoader);
+      return new GLTFLoader();
+    }
+
+    // (Optional) CubeTextureLoader via jsm (rarely needed directly; see skybox note)
+    async _getCubeTextureLoader() {
+      await this._ensureThree();
+      // Most people still use THREE.CubeTextureLoader global; with modules you can do:
+      // In jsm, a cubemap is typically loaded with THREE.CubeTextureLoader from core,
+      // which is available as a class on this.THREE namespace:
+      return new this.THREE.CubeTextureLoader();
     }
 
     getInfo() {
