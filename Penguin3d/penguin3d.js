@@ -2,7 +2,7 @@
 // DON'T GIVE CREDIT TO ME AT ALL WHEN USING THIS PLEASE FOR THE LOVE OF GOD.
 
 // PenguinMod 3D Extension using Three.js
-// Full-featured toolkit: scene, camera, objects, materials, shaders, skybox, physics, post-processing
+// Full-featured toolkit: scene, camera, objects, materials, shaders, skybox, physics
 
 (function(Scratch) {
   'use strict';
