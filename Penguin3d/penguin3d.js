@@ -637,16 +637,20 @@
   }
 
   _getHalfExtentsFromObject(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return { x: 1, y: 1, z: 1 }; // fallback
+
     const box = new this.THREE.Box3().setFromObject(obj);
     const size = new this.THREE.Vector3();
     box.getSize(size);
-    // Avoid zero sizes
+
     return {
       x: Math.max(0.001, size.x / 2),
       y: Math.max(0.001, size.y / 2),
       z: Math.max(0.001, size.z / 2)
     };
   }
+
 
   playAnimationLooped(args) {
     const obj = this.objects[args.ID];
