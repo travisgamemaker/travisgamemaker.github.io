@@ -133,11 +133,17 @@
         { opcode: 'changeObjectPosition', blockType: Scratch.BlockType.COMMAND, text: 'change object [ID] position by x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
         { opcode: 'setObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] [AXIS] position to [VALUE]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
         { opcode: 'setObjectPosition', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] position to x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }}},
-       
+        { opcode: 'createPrimitive', blockType: Scratch.BlockType.COMMAND, text: 'create [TYPE] primitive as [ID]', arguments: { TYPE: { type: Scratch.ArgumentType.STRING, menu: 'primitiveMenu' }, ID: { type: Scratch.ArgumentType.STRING }}},
+
+        
         "---",
 
         { opcode: 'rotateObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'rotate object [ID] around [AXIS] by [DEGREES] degrees', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, DEGREES: { type: Scratch.ArgumentType.NUMBER, defaultValue: 15 }}},
         { opcode: 'setObjectRotation', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] rotation to x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER }, Y: { type: Scratch.ArgumentType.NUMBER }, Z: { type: Scratch.ArgumentType.NUMBER }}},
+
+        "---",
+        
+        { opcode: 'setObjectScale', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] scale to x: [X] y: [Y] z: [Z]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, X: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }, Y: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }, Z: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }}},
 
         "---",
         
@@ -158,6 +164,8 @@
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Physics") },
 
         { opcode: 'addPhysicsToObject', blockType: Scratch.BlockType.COMMAND, text: 'add physics to object [ID]', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
+        { opcode: 'setCollisionShape', blockType: Scratch.BlockType.COMMAND, text: 'set object [ID] collider to [SHAPE]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, SHAPE: { type: Scratch.ArgumentType.STRING, menu: 'shapeMenu' }}},
+
         { opcode: 'removePhysicsFromObject', blockType: Scratch.BlockType.COMMAND, text: 'remove physics from object [ID]', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
         { opcode: 'setObjectVelocity', blockType: Scratch.BlockType.COMMAND, text: 'set velocity of object [ID] x: [VX] y: [VY] z: [VZ]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, VX: { type: Scratch.ArgumentType.NUMBER }, VY: { type: Scratch.ArgumentType.NUMBER }, VZ: { type: Scratch.ArgumentType.NUMBER }}},
         { opcode: 'objectIsTouchingAnything', blockType: Scratch.BlockType.BOOLEAN, text: 'object [ID] is touching anything?', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
@@ -208,6 +216,14 @@
         onOffMenu: {
           acceptReporters: true, 
           items: ['on', 'off'] 
+        },
+        shapeMenu: {
+          acceptReporters: true,
+          items: ['cuboid', 'sphere', 'capsule']
+        },
+        primitiveMenu: {
+          acceptReporters: true,
+          items: ['cube', 'sphere', 'plane', 'cylinder', 'cone']
         }
       }
     };
@@ -290,6 +306,26 @@
     }
   }
 
+  createPrimitive(args) {
+    if (!this.scene || !this.THREE) return;
+
+    let geometry;
+    switch (args.TYPE.toLowerCase()) {
+      case 'cube':     geometry = new this.THREE.BoxGeometry(1, 1, 1); break;
+      case 'sphere':   geometry = new this.THREE.SphereGeometry(0.5, 16, 16); break;
+      case 'plane':    geometry = new this.THREE.PlaneGeometry(1, 1); break;
+      case 'cylinder': geometry = new this.THREE.CylinderGeometry(0.5, 0.5, 1, 16); break;
+      case 'cone':     geometry = new this.THREE.ConeGeometry(0.5, 1, 16); break;
+      default: return;
+    }
+
+    const material = new this.THREE.MeshStandardMaterial({ color: 0xcccccc });
+    const mesh = new this.THREE.Mesh(geometry, material);
+    this.scene.add(mesh);
+    this.objects[args.ID] = mesh;
+  }
+
+
   changeObjectPosition(args) {
     const obj = this.objects[args.ID];
     if (!obj) return;
@@ -300,6 +336,13 @@
       this.physicsBodies[args.ID].body.setTranslation(obj.position, true);
     }
   }
+
+  setObjectScale(args) {
+    const obj = this.objects[args.ID];
+    if (!obj) return;
+    obj.scale.set(Number(args.X), Number(args.Y), Number(args.Z));
+  }
+
 
   setObjectAxis(args) {
     const obj = this.objects[args.ID];
@@ -713,6 +756,41 @@
       this.debugMeshes[args.ID] = dbgMesh;
     }
   }
+
+  setCollisionShape(args) {
+    const obj = this.objects[args.ID];
+    if (!obj || !this.rapier || !this.physicsWorld || !this.physicsBodies[args.ID]) return;
+
+    // Remove old collider
+    const { body, collider } = this.physicsBodies[args.ID];
+    this.physicsWorld.removeCollider(collider, false);
+
+    // Get object size for scale
+    const box = new this.THREE.Box3().setFromObject(obj);
+    const size = new this.THREE.Vector3();
+    box.getSize(size);
+
+    const halfExtents = {
+      x: Math.max(0.001, size.x / 2),
+      y: Math.max(0.001, size.y / 2),
+      z: Math.max(0.001, size.z / 2)
+    };
+
+    const radius = Math.max(halfExtents.x, halfExtents.z) || 0.5;
+    const shapeType = args.SHAPE.toLowerCase();
+
+    const colliderDesc = {
+      cuboid: this.rapier.ColliderDesc.cuboid(halfExtents.x, halfExtents.y, halfExtents.z),
+      sphere: this.rapier.ColliderDesc.ball(radius),
+      capsule: this.rapier.ColliderDesc.capsuleY(halfExtents.y * 0.5, radius)
+    }[shapeType];
+
+    if (!colliderDesc) return;
+
+    const newCollider = this.physicsWorld.createCollider(colliderDesc, body);
+    this.physicsBodies[args.ID].collider = newCollider;
+  }
+
 
   removePhysicsFromObject(args) {
     const data = this.physicsBodies[args.ID];
