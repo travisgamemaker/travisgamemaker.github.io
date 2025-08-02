@@ -98,7 +98,10 @@
         { opcode: 'renderSceneWithDelta',       blockType: Scratch.BlockType.COMMAND, text: 'render scene with delta [DELTA]', arguments: { DELTA: { type :Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
         { opcode: 'isRenderingScene',           blockType: Scratch.BlockType.BOOLEAN, text: 'rendering?' },
         { opcode: 'toggleBackground',           blockType: Scratch.BlockType.COMMAND, text: 'background visible: [VISIBLE]', arguments: { VISIBLE: { type: Scratch.ArgumentType.BOOLEAN}}},
+        { opcode: 'getRenderedDataURL',         blockType: Scratch.BlockType.REPORTER, text: 'render and output to data URL [DELTA]', arguments: { DELTA: { type :Scratch.ArgumentType.NUMBER, defaultValue: 0.016 }}},
 
+
+        
         { blockType: Scratch.BlockType.LABEL, text: Scratch.translate("Camera") },
 
         { opcode: 'changeCameraAxis', blockType: Scratch.BlockType.COMMAND, text: 'change camera\'s [AXIS] position by [VALUE]', arguments: { AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 10 }}},
@@ -482,7 +485,7 @@
     this.camera.updateProjectionMatrix();
   }
 
-  renderSceneWithDelta(args) {
+  async renderSceneWithDelta(args) {
     if (!this.initialized) { alert('Create a scene first.'); return; }
     const delta = parseFloat(args.DELTA);
     this.isRendering=true;
@@ -514,12 +517,44 @@
     if (this.composer) this.composer.render();
     else this.renderer.render(this.scene,this.camera);
     this.isRendering=false;
+
+    await new Promise(requestAnimationFrame);
   }
 
-  getRenderedDataURL() {
-    if (!this.initialized) { alert('Render a frame first.'); return ''; }
+  async getRenderedDataURL(args) {
+    if (!this.initialized) { alert('Create a scene first.'); return; }
+    const delta = parseFloat(args.DELTA);
+    this.isRendering=true;
+
+    this.mixers.forEach(m=>m.update(delta));
+    // physics step
+    if (this.physicsWorld) {
+      this.physicsWorld.step();
+      // Update Three.js objects from physics
+      for (const [id, { body }] of Object.entries(this.physicsBodies)) {
+        const obj = this.objects[id];
+        if (!obj) continue;
+        const pos = body.translation();
+        const rot = body.rotation();
+        obj.position.set(pos.x, pos.y, pos.z);
+        obj.quaternion.set(rot.x, rot.y, rot.z, rot.w);
+        
+        if (this.debugPhysics) {
+          let dbg = this.debugMeshes[id];
+          if (!dbg) continue;
+          const halfExtents = this._getHalfExtentsFromObject({ ID: id });
+          dbg.scale.set(halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2);
+          dbg.position.copy(obj.position);
+          dbg.quaternion.copy(obj.quaternion);
+        }
+      }
+    }
+    
     this.renderer.render(this.scene,this.camera);
     return this.renderer.domElement.toDataURL('image/png');
+    this.isRendering=false;
+
+    await new Promise(requestAnimationFrame);
   }
 
   setBackgroundColor(args) {
