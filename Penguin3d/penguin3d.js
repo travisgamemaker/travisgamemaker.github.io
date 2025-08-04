@@ -7387,8 +7387,38 @@ void main() {
  */
 //=== END OF BUNDLE ===
 
-window.THREE = fM;
-window.GLTFLoader = fM.GLTFLoader;
+window.THREE = {
+	//I love THIS SO MUCH
+	...fM,
+  Clock: fM.Clock || THREE.Clock,
+  Scene: fM.Scene || THREE.Scene,
+  PerspectiveCamera: fM.PerspectiveCamera || THREE.PerspectiveCamera,
+  WebGLRenderer: fM.WebGLRenderer || THREE.WebGLRenderer,
+  Fog: fM.Fog || THREE.Fog,
+  FogExp2: fM.FogExp2 || THREE.FogExp2,
+  Color: fM.Color || THREE.Color,
+  TextureLoader: fM.TextureLoader || THREE.TextureLoader,
+  Box3: fM.Box3 || THREE.Box3,
+  Vector3: fM.Vector3 || THREE.Vector3,
+  BoxGeometry: fM.BoxGeometry || THREE.BoxGeometry,
+  SphereGeometry: fM.SphereGeometry || THREE.SphereGeometry,
+  PlaneGeometry: fM.PlaneGeometry || THREE.PlaneGeometry,
+  CylinderGeometry: fM.CylinderGeometry || THREE.CylinderGeometry,
+  ConeGeometry: fM.ConeGeometry || THREE.ConeGeometry,
+  MeshStandardMaterial: fM.MeshStandardMaterial || THREE.MeshStandardMaterial,
+  MeshBasicMaterial: fM.MeshBasicMaterial || THREE.MeshBasicMaterial,
+  MeshPhongMaterial: fM.MeshPhongMaterial || THREE.MeshPhongMaterial,
+  ShaderMaterial: fM.ShaderMaterial || THREE.ShaderMaterial,
+  AmbientLight: fM.AmbientLight || THREE.AmbientLight,
+  PointLight: fM.PointLight || THREE.PointLight,
+  DirectionalLight: fM.DirectionalLight || THREE.DirectionalLight,
+  AnimationMixer: fM.AnimationMixer || THREE.AnimationMixer,
+  LoopRepeat: fM.LoopRepeat || THREE.LoopRepeat,
+  LoopOnce: fM.LoopOnce || THREE.LoopOnce,
+  CubeTextureLoader: fM.CubeTextureLoader || THREE.CubeTextureLoader,
+  MathUtils: fM.MathUtils || THREE.MathUtils,
+};
+
 
 (function(Scratch) {
   'use strict';
