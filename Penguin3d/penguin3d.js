@@ -7387,6 +7387,9 @@ void main() {
  */
 //=== END OF BUNDLE ===
 
+window.THREE = fM;
+window.GLTFLoader = fM.GLTFLoader;
+
 (function(Scratch) {
   'use strict';
 
@@ -7396,8 +7399,6 @@ void main() {
 
   class ThreeDExtension {
     constructor() {
-			window.THREE = fM;
-			window.GLTFLoader = fM.GLTFLoader;
 
 			this.THREE = window.THREE;
 			this.GLTFLoader = window.GLTFLoader
