@@ -7506,7 +7506,10 @@ window.GLTFLoader = fM.GLTFLoader;
 
         { opcode: 'loadGLTFModel',              blockType: Scratch.BlockType.COMMAND, text: 'create object from glTF model [URL] as [ID]', arguments:{URL:{type:Scratch.ArgumentType.STRING},ID:{type:Scratch.ArgumentType.STRING}}},
         { opcode: 'replaceModel',               blockType: Scratch.BlockType.COMMAND, text: 'replace object [ID] model with glTF model [URL]', arguments:{ID:{type:Scratch.ArgumentType.STRING},URL:{type:Scratch.ArgumentType.STRING}}},
-        
+        { opcode: 'getAllObjectIDs', 		blockType: Scratch.BlockType.REPORTER, text: 'list of object IDs' },
+	{ opcode: 'cloneObject', 		blockType: Scratch.BlockType.COMMAND, text: 'clone object [SOURCE] as [NEWID]', arguments: { SOURCE: { type: Scratch.ArgumentType.STRING }, NEWID: { type: Scratch.ArgumentType.STRING } }},
+	{ opcode: 'deleteObject', 		blockType: Scratch.BlockType.COMMAND, text: 'delete object [ID]', arguments: { ID: { type: Scratch.ArgumentType.STRING }}},
+
         "---",
 
         { opcode: 'changeObjectAxis', blockType: Scratch.BlockType.COMMAND, text: 'change object [ID] [AXIS] position by [VALUE]', arguments: { ID: { type: Scratch.ArgumentType.STRING }, AXIS: { type: Scratch.ArgumentType.STRING, menu: 'axisMenu' }, VALUE: { type: Scratch.ArgumentType.NUMBER, defaultValue: 10 }}},
@@ -7994,6 +7997,45 @@ window.GLTFLoader = fM.GLTFLoader;
   }
 
   objectExists(args) { return !!this.objects[args.ID]; }
+
+	getAllObjectIDs() {
+  	return Object.keys(this.objects);
+	}
+
+	cloneObject(args) {
+  	const source = this.objects[args.SOURCE];
+  	if (!source) return;
+		const clone = source.clone(true);
+		clone.position.copy(source.position);
+   	clone.rotation.copy(source.rotation);
+  	clone.scale.copy(source.scale);
+		
+ 	  this.scene.add(clone);
+  	 this.objects[args.NEWID] = clone;
+ 	}
+
+	deleteObject(args) {
+		const obj = this.objects[args.ID];
+	  if (!obj) return;
+
+		if (this.scene && obj.parent) this.scene.remove(obj);
+  	if (obj.geometry) obj.geometry.dispose();
+	  if (obj.material) {
+ 	  	if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+    	else obj.material.dispose();
+		}
+
+  	delete this.objects[args.ID];
+
+  	if (this.physicsBodies?.[args.ID]) {
+   		this.removePhysicsFromObject(args); // Clean physics too
+ 		}
+
+  	if (this.debugMeshes?.[args.ID]) {
+    	this.scene.remove(this.debugMeshes[args.ID]);
+    	delete this.debugMeshes[args.ID];
+  	}
+	}
 
   getObjectCoordinate(args) {
     const obj=this.objects[args.ID];
