@@ -7387,9 +7387,6 @@ void main() {
  */
 //=== END OF BUNDLE ===
 
-window.THREE = fM;
-window.GLTFLoader = fM.GLTFLoader;
-
 (function(Scratch) {
   'use strict';
 
@@ -7399,6 +7396,11 @@ window.GLTFLoader = fM.GLTFLoader;
 
   class ThreeDExtension {
     constructor() {
+			window.THREE = fM;
+			window.GLTFLoader = fM.GLTFLoader;
+
+			this.THREE = window.THREE;
+			this.GLTFLoader = window.GLTFLoader
       this.initialized = false;
       this.scene = null;
       this.camera = null;
@@ -7440,11 +7442,10 @@ window.GLTFLoader = fM.GLTFLoader;
       this.colliderSet = this.physicsWorld?.colliders;
     }
 
-
     // Convenience: get a GLTFLoader instance
     async _getGLTFLoader() {
       await this._ensureThree();
-      return new window.GLTFLoader();
+      return new this.GLTFLoader();
     }
 
     // (Optional) CubeTextureLoader via jsm (rarely needed directly; see skybox note)
